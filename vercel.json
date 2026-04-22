@@ -1,10 +1,12 @@
 {
   "functions": {
-    "api/*.js": {
-      "maxDuration": 10
+    "api/*.mjs": {
+      "maxDuration": 10,
+      "includeFiles": "registry/**/*"
     },
-    "api/**/*.js": {
-      "maxDuration": 10
+    "api/**/*.mjs": {
+      "maxDuration": 10,
+      "includeFiles": "registry/**/*"
     }
   },
   "rewrites": [

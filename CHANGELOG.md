@@ -21,6 +21,7 @@
 - Changed the live workspace flow so follow-up questions advance one at a time instead of rendering the whole batch at once, and made the two top workspace cards stretch to matching height.
 - Recentered the dedicated knee-page hero, widened the hero title and subtitle measure, and strengthened the live workspace heading so it reads as a clear title with full-width supporting copy.
 - Replaced the Vercel catch-all API entry with explicit serverless route files, switched ledger fetching to a stable query-based endpoint, and hardened the frontend JSON handling so broken deployments show a clear API error instead of a raw parser failure.
+- Converted the Vercel API entry files to `.mjs` default exports and explicitly bundled the registry files into the serverless functions so deployed session-start requests can initialize the engine without invocation crashes.
 
 ## 2026-04-22
 
