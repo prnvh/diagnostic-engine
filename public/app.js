@@ -72,9 +72,27 @@ async function requestJson(url, options = {}) {
     ...options
   });
 
-  const payload = await response.json();
+  const contentType = response.headers.get("content-type") || "";
+  const rawPayload = await response.text();
+
+  let payload = null;
+  if (rawPayload) {
+    try {
+      payload = JSON.parse(rawPayload);
+    } catch (error) {
+      payload = null;
+    }
+  }
+
   if (!response.ok) {
-    throw new Error(payload.error || `Request failed with ${response.status}`);
+    const fallbackMessage = contentType.includes("text/html")
+      ? "The deployed API route returned an HTML page instead of JSON. The Vercel API endpoint is likely missing or not deployed yet."
+      : rawPayload.slice(0, 160) || `Request failed with ${response.status}`;
+    throw new Error(payload?.error || fallbackMessage);
+  }
+
+  if (!payload) {
+    throw new Error("The API returned a non-JSON response.");
   }
 
   return payload;
@@ -511,7 +529,7 @@ async function loadLedger() {
   showStatus("Refreshing ledger...", "neutral");
 
   try {
-    const payload = await requestJson(`/api/session/${encodeURIComponent(state.sessionId)}/ledger`);
+    const payload = await requestJson(`/api/session/ledger?sessionId=${encodeURIComponent(state.sessionId)}`);
     renderLedger(payload.ledger || []);
     showStatus("Ledger refreshed.", "success");
   } catch (error) {

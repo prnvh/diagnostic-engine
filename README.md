@@ -83,8 +83,8 @@ Primary hosted paths:
 
 - `POST /api/session/start`
 - `POST /api/session/answer`
-- `GET /api/session/:id`
-- `GET /api/session/:id/ledger`
+- `GET /api/session/get?sessionId=...`
+- `GET /api/session/ledger?sessionId=...`
 - `GET /api/health`
 
 Compatibility rewrites also keep `/session/*` and `/health` working on Vercel.

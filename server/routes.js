@@ -64,8 +64,12 @@ async function readRequestBody(request) {
   }
 }
 
+function getRequestUrl(request) {
+  return new URL(request.url, `http://${request.headers.host || "localhost"}`);
+}
+
 function getPathname(request) {
-  return new URL(request.url, `http://${request.headers.host || "localhost"}`).pathname;
+  return getRequestUrl(request).pathname;
 }
 
 function normalizeApiPath(pathname) {
@@ -114,7 +118,7 @@ function buildSessionSnapshot(session) {
     parserOutput: session.parserOutput || { unparsed: [] },
     questionLog: session.questionLog || [],
     topCandidates: (session.candidates || []).slice(0, 3).map(buildCandidateSummary),
-    ledgerPath: `/api/session/${session.sessionId}/ledger`,
+    ledgerPath: `/api/session/ledger?sessionId=${encodeURIComponent(session.sessionId)}`,
     createdAt: session.createdAt,
     updatedAt: session.updatedAt
   };
@@ -424,7 +428,8 @@ async function tryServeStaticAsset(services, pathname, response) {
 
 function createRequestHandler(services) {
   return async function handleRequest(request, response) {
-    const pathname = getPathname(request);
+    const requestUrl = getRequestUrl(request);
+    const pathname = requestUrl.pathname;
     const apiPath = normalizeApiPath(pathname);
 
     if (request.method === "OPTIONS") {
@@ -442,6 +447,7 @@ function createRequestHandler(services) {
       let result;
       const ledgerMatch = apiPath.match(/^\/session\/([^/]+)\/ledger$/);
       const sessionMatch = apiPath.match(/^\/session\/([^/]+)$/);
+      const querySessionId = requestUrl.searchParams.get("sessionId");
 
       if (request.method === "GET" && (apiPath === "/health" || pathname === "/health")) {
         result = {
@@ -455,6 +461,20 @@ function createRequestHandler(services) {
         result = await startDiagnosticSession(services, await readRequestBody(request));
       } else if (request.method === "POST" && apiPath === "/session/answer") {
         result = await answerDiagnosticSession(services, await readRequestBody(request));
+      } else if (request.method === "GET" && apiPath === "/session/ledger") {
+        if (!querySessionId) {
+          throw new Error("sessionId query parameter is required");
+        }
+        result = { sessionId: querySessionId, ledger: await getLedger(services.store, querySessionId) };
+      } else if (request.method === "GET" && apiPath === "/session/get") {
+        if (!querySessionId) {
+          throw new Error("sessionId query parameter is required");
+        }
+        const session = await getSession(services.store, querySessionId);
+        if (!session) {
+          throw new Error(`Session ${querySessionId} not found`);
+        }
+        result = { session: buildSessionSnapshot(session) };
       } else if (request.method === "GET" && ledgerMatch) {
         const sessionId = decodeURIComponent(ledgerMatch[1]);
         result = { sessionId, ledger: await getLedger(services.store, sessionId) };

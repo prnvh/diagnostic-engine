@@ -1,6 +1,9 @@
 {
   "functions": {
-    "api/[...route].js": {
+    "api/*.js": {
+      "maxDuration": 10
+    },
+    "api/**/*.js": {
       "maxDuration": 10
     }
   },
@@ -10,8 +13,20 @@
       "destination": "/api/health"
     },
     {
-      "source": "/session/(.*)",
-      "destination": "/api/session/$1"
+      "source": "/session/start",
+      "destination": "/api/session/start"
+    },
+    {
+      "source": "/session/answer",
+      "destination": "/api/session/answer"
+    },
+    {
+      "source": "/session/([^/]+)/ledger",
+      "destination": "/api/session/ledger?sessionId=$1"
+    },
+    {
+      "source": "/session/([^/]+)",
+      "destination": "/api/session/get?sessionId=$1"
     }
   ]
 }
