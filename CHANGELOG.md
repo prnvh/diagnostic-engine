@@ -21,6 +21,7 @@
 - Added `vercel.json` rewrites plus a Supabase SQL migration under `supabase/migrations/`.
 - Added `GET /api/health` and `GET /api/session/:id` to make deployment and session inspection easier.
 - Added `SYSTEM_ARCHITECTURE.md` to document the current design, data flow, module boundaries, and deployment shape.
+- Rebuilt the public site into a real landing page plus live workspace, inspired by editorial AI product pages and clean medical visual systems while keeping the product claims accurate to the actual engine.
 
 ### Added verification and research tooling
 
