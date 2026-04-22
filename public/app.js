@@ -29,8 +29,6 @@ const elements = {
   startButton: document.getElementById("start-button"),
   startForm: document.getElementById("start-form"),
   statusBanner: document.getElementById("status-banner"),
-  usecasePanels: [...document.querySelectorAll("[data-usecase-panel]")],
-  usecaseTabs: [...document.querySelectorAll("[data-usecase-target]")],
   workspaceSection: document.getElementById("demo")
 };
 
@@ -481,22 +479,6 @@ function bindSamples() {
   });
 }
 
-function bindUsecaseTabs() {
-  elements.usecaseTabs.forEach((tab) => {
-    tab.addEventListener("click", () => {
-      const target = tab.dataset.usecaseTarget;
-
-      elements.usecaseTabs.forEach((entry) => {
-        entry.classList.toggle("is-active", entry === tab);
-      });
-
-      elements.usecasePanels.forEach((panel) => {
-        panel.classList.toggle("is-active", panel.dataset.usecasePanel === target);
-      });
-    });
-  });
-}
-
 function init() {
   elements.patientId.value = createPatientId();
   elements.startForm.addEventListener("submit", startSession);
@@ -504,7 +486,6 @@ function init() {
   elements.ledgerButton.addEventListener("click", loadLedger);
   elements.resetButton.addEventListener("click", resetDemo);
   bindSamples();
-  bindUsecaseTabs();
   renderLedger([]);
 }
 

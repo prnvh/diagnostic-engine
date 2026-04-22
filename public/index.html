@@ -6,30 +6,31 @@
     <title>Diagnostic Engine | Governed Knee Symptom Reasoning</title>
     <meta
       name="description"
-      content="A governed, registry-driven knee symptom interview that turns a free-text complaint into structured evidence, targeted follow-up questions, and a bounded result."
+      content="A governed knee symptom interview that turns free text into structured evidence, targeted follow-up questions, and a bounded outcome."
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Space+Grotesk:wght@400;500;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
-    <div class="page-aura" aria-hidden="true"></div>
+    <div class="page-veil" aria-hidden="true"></div>
+
     <div class="site-shell">
       <header class="topbar">
         <a class="brand" href="#top">
-          <span class="brand-mark" aria-hidden="true"></span>
+          <span class="brand-dot" aria-hidden="true"></span>
           <span>Diagnostic Engine</span>
         </a>
 
         <nav class="topnav" aria-label="Primary">
-          <a href="#use-cases">Use cases</a>
-          <a href="#demo">Demo</a>
           <a href="#how-it-works">How it works</a>
-          <a href="#architecture">Why it works</a>
+          <a href="#outputs">Outputs</a>
+          <a href="#demo">Demo</a>
+          <a href="#coverage">Coverage</a>
         </nav>
 
         <div class="scope-badge">Knee-only beta</div>
@@ -38,309 +39,236 @@
       <main id="top">
         <section class="hero">
           <div class="hero-copy">
-            <p class="kicker">Governed symptom reasoning for knee complaints</p>
-            <h1>Structured triage for pain, injury, and what to do next.</h1>
+            <p class="eyebrow">Governed symptom reasoning for knee complaints</p>
+            <h1>A clearer way to triage knee pain, injury, and red flags.</h1>
             <p class="hero-text">
-              Describe a knee problem in plain English. The engine converts it into bounded evidence, asks a small set of
-              targeted follow-up questions, and returns either a shortlist, a cautious fallback, or a safety escalation.
-              It is not a diagnosis.
+              Describe the problem in plain English. The engine converts it into bounded evidence, asks only the next useful
+              questions, and ends in one of three ways: a shortlist, a cautious fallback, or a safety escalation. It is not
+              a diagnosis.
             </p>
 
             <div class="hero-actions">
               <a class="button primary" href="#demo">Open the guided check</a>
-              <a class="button secondary" href="#how-it-works">See how it works</a>
+              <a class="button secondary" href="#how-it-works">See the logic</a>
             </div>
 
-            <div class="stats-grid">
-              <article class="stat-card">
-                <strong>53</strong>
-                <span>observation-level signals</span>
+            <div class="hero-highlights">
+              <article class="highlight">
+                <strong>53 signals</strong>
+                <span>observation-level symptoms in the live registry</span>
               </article>
-              <article class="stat-card">
-                <strong>28</strong>
-                <span>question-bank prompts</span>
+              <article class="highlight">
+                <strong>28 prompts</strong>
+                <span>question-bank entries for targeted follow-up</span>
               </article>
-              <article class="stat-card">
-                <strong>4</strong>
-                <span>current knee condition nodes</span>
+              <article class="highlight">
+                <strong>Append-only ledger</strong>
+                <span>every session can be inspected after the fact</span>
               </article>
-              <article class="stat-card">
-                <strong>1</strong>
-                <span>append-only ledger per session</span>
-              </article>
-            </div>
-
-            <div class="hero-samples">
-              <span class="micro-label">Quick starts</span>
-              <div class="sample-pill-row">
-                <button class="pill-button" type="button" data-sample="acl">Twist and pop</button>
-                <button class="pill-button" type="button" data-sample="meniscus">Catch or lock</button>
-                <button class="pill-button" type="button" data-sample="pfps">Stairs and sitting</button>
-                <button class="pill-button" type="button" data-sample="redflag">Hot red knee</button>
-              </div>
             </div>
           </div>
 
           <div class="hero-stage">
-            <div class="atlas-card">
-              <div class="atlas-grid" aria-hidden="true"></div>
-              <svg class="atlas-figure" viewBox="0 0 560 700" role="img" aria-label="Abstract body map with knee focus">
+            <div class="bodymap-card">
+              <svg class="bodymap-figure" viewBox="0 0 560 680" role="img" aria-label="Abstract knee focus map">
                 <defs>
-                  <linearGradient id="boneGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stop-color="#f7efe0"></stop>
-                    <stop offset="100%" stop-color="#d9e8df"></stop>
-                  </linearGradient>
-                  <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stop-color="#b86f4f"></stop>
-                    <stop offset="100%" stop-color="#d79a53"></stop>
+                  <linearGradient id="boneStroke" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#f6ecde"></stop>
+                    <stop offset="100%" stop-color="#e0eadf"></stop>
                   </linearGradient>
                 </defs>
 
-                <g class="map-rings">
-                  <circle cx="294" cy="358" r="184"></circle>
-                  <circle cx="294" cy="358" r="132"></circle>
-                  <circle cx="294" cy="358" r="88"></circle>
+                <g class="ring-field">
+                  <circle cx="280" cy="376" r="176"></circle>
+                  <circle cx="280" cy="376" r="130"></circle>
+                  <circle cx="280" cy="376" r="88"></circle>
                 </g>
 
-                <g class="map-lines">
-                  <path d="M88 210 C160 188, 206 150, 262 112"></path>
-                  <path d="M470 214 C404 204, 362 174, 314 116"></path>
-                  <path d="M138 560 C194 536, 236 504, 284 444"></path>
-                  <path d="M452 538 C408 520, 364 486, 314 438"></path>
+                <g class="body-lines">
+                  <circle cx="270" cy="110" r="44"></circle>
+                  <path d="M224 176 C216 220, 222 262, 244 314"></path>
+                  <path d="M316 176 C324 220, 318 262, 296 314"></path>
+                  <path d="M244 314 C244 356, 244 394, 250 434"></path>
+                  <path d="M296 314 C296 356, 296 394, 290 434"></path>
+                  <path d="M250 434 C240 490, 226 560, 220 622"></path>
+                  <path d="M290 434 C300 490, 314 560, 320 622"></path>
+                  <path d="M228 244 C184 270, 154 304, 132 352"></path>
+                  <path d="M312 244 C356 270, 386 304, 408 352"></path>
                 </g>
 
-                <g class="body-outline">
-                  <circle cx="280" cy="112" r="48"></circle>
-                  <path d="M226 178 C218 218, 224 258, 246 310"></path>
-                  <path d="M334 178 C342 218, 336 258, 314 310"></path>
-                  <path d="M246 310 C246 356, 246 390, 254 432"></path>
-                  <path d="M314 310 C314 356, 314 390, 306 432"></path>
-                  <path d="M254 432 C244 486, 230 560, 222 644"></path>
-                  <path d="M306 432 C318 486, 332 560, 340 644"></path>
-                  <path d="M228 252 C182 282, 150 314, 126 362"></path>
-                  <path d="M332 252 C378 282, 410 314, 434 362"></path>
-                </g>
-
-                <g class="knee-focus">
-                  <circle cx="244" cy="456" r="28"></circle>
-                  <circle cx="244" cy="456" r="50"></circle>
-                  <circle cx="244" cy="456" r="74"></circle>
-                </g>
-
-                <g class="knee-joint">
-                  <path d="M228 420 C224 440, 224 474, 230 492"></path>
-                  <path d="M262 420 C258 440, 258 474, 252 492"></path>
-                  <path d="M230 492 C228 530, 224 578, 220 626"></path>
-                  <path d="M252 492 C256 530, 262 578, 266 626"></path>
+                <g class="focus-rings">
+                  <circle cx="244" cy="458" r="28"></circle>
+                  <circle cx="244" cy="458" r="54"></circle>
+                  <circle cx="244" cy="458" r="82"></circle>
                 </g>
               </svg>
 
-              <article class="signal-card signal-card-one">
-                <span class="signal-label">Acute injury</span>
-                <strong>Twist, pop, same-day swelling</strong>
-                <p>Useful for high-weight ligament patterns.</p>
+              <article class="map-note map-note-top">
+                <span class="note-label">Acute injury</span>
+                <strong>Twist, pop, swelling that day</strong>
+                <p>High-value ligament questions move up fast.</p>
               </article>
 
-              <article class="signal-card signal-card-two">
-                <span class="signal-label">Mechanical symptoms</span>
-                <strong>Catch, click, or lock</strong>
-                <p>Questions pivot toward meniscal clues.</p>
-              </article>
-
-              <article class="signal-card signal-card-three">
-                <span class="signal-label">Safety intercept</span>
-                <strong>Hot red knee, fever, deformity</strong>
-                <p>These can stop the normal ranking loop.</p>
+              <article class="map-note map-note-bottom">
+                <span class="note-label">Mechanical symptoms</span>
+                <strong>Catch, click, lock, or give way</strong>
+                <p>The selector pivots toward the best differentiating prompts.</p>
               </article>
             </div>
 
-            <aside class="scope-card">
-              <p class="kicker subtle">Built narrow on purpose</p>
-              <h2>Inspectability first, then breadth.</h2>
-              <ul class="scope-list">
-                <li>ACL tear</li>
-                <li>Meniscal tear</li>
-                <li>Patellofemoral pain syndrome</li>
-                <li>Knee osteoarthritis</li>
-              </ul>
-              <p class="scope-note">
-                This build uses a bounded symptom registry, targeted follow-up questions, and an append-only ledger so every
-                session can be inspected after the fact.
-              </p>
-            </aside>
+            <div class="adjacent-card">
+              <p class="eyebrow subtle">What this site actually does</p>
+              <h2>Not a broad chatbot. A bounded reasoning loop.</h2>
+              <div class="adjacent-list">
+                <div>
+                  <strong>It takes free text seriously.</strong>
+                  <p>The first complaint shapes the interview instead of forcing a full checklist.</p>
+                </div>
+                <div>
+                  <strong>It stays inside a controlled registry.</strong>
+                  <p>Unknown facts remain unknown rather than being quietly invented into the model.</p>
+                </div>
+                <div>
+                  <strong>It can stop early for safety.</strong>
+                  <p>Hot red knee with fever, deformity, or major trauma can interrupt normal ranking.</p>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
-        <section class="usecase-section" id="use-cases">
+        <section class="explain-section" id="how-it-works">
           <div class="section-heading">
-            <p class="kicker">How you can use it</p>
-            <h2>Start from the complaint you actually have, not from a rigid checklist.</h2>
-            <p>
-              The flow below is organized the way people describe knee problems in the real world: after a twist, after
-              weeks of stairs pain, when the joint catches, or when something feels unsafe.
-            </p>
+            <p class="eyebrow">How it works</p>
+            <h2>The system is easier to understand when you look at the loop directly.</h2>
           </div>
 
-          <div class="usecase-tabs" role="tablist" aria-label="Use case categories">
-            <button class="usecase-tab is-active" type="button" data-usecase-target="injury">After a twist</button>
-            <button class="usecase-tab" type="button" data-usecase-target="overuse">Gradual pain</button>
-            <button class="usecase-tab" type="button" data-usecase-target="mechanical">Catch or lock</button>
-            <button class="usecase-tab" type="button" data-usecase-target="safety">Red flags</button>
+          <div class="explain-grid">
+            <article class="explain-card">
+              <span class="step-number">01</span>
+              <h3>Parse the complaint</h3>
+              <p>
+                The parser reads the initial story and maps only what it can justify into the knee symptom registry.
+                Anything unclear stays unresolved rather than being guessed.
+              </p>
+              <ul>
+                <li>Free text in</li>
+                <li>Controlled symptom evidence out</li>
+                <li>Unparsed leftovers preserved</li>
+              </ul>
+            </article>
+
+            <article class="explain-card">
+              <span class="step-number">02</span>
+              <h3>Ask only the next useful questions</h3>
+              <p>
+                The engine scores the live candidate pool, looks for missing high-value evidence, and chooses a small batch
+                of follow-up questions instead of asking everything.
+              </p>
+              <ul>
+                <li>Question conditions are respected</li>
+                <li>Low-confidence clues can be clarified</li>
+                <li>Each round is intentionally narrow</li>
+              </ul>
+            </article>
+
+            <article class="explain-card">
+              <span class="step-number">03</span>
+              <h3>Stop with a bounded result</h3>
+              <p>
+                The loop ends when the shortlist is strong enough, when evidence stays too thin and the system falls back, or
+                when safety logic says the normal ranking loop should stop.
+              </p>
+              <ul>
+                <li>Shortlist when fit is strong</li>
+                <li>Fallback when confidence is not earned</li>
+                <li>Escalation when red flags appear</li>
+              </ul>
+            </article>
+          </div>
+        </section>
+
+        <section class="outputs-section" id="outputs">
+          <div class="section-heading">
+            <p class="eyebrow">Outputs</p>
+            <h2>The engine has only three endings, and they mean different things.</h2>
           </div>
 
-          <div class="usecase-panels">
-            <article class="usecase-panel is-active" data-usecase-panel="injury">
-              <div class="usecase-lead">
-                <p class="micro-label">Sports and awkward movement</p>
-                <h3>Best for acute injury stories where timing and mechanism matter.</h3>
-                <p>
-                  These starts help the engine ask about pivoting, swelling timing, instability, and whether you had to stop
-                  right away.
-                </p>
-              </div>
-              <div class="prompt-grid">
-                <button class="prompt-card" type="button" data-sample="acl">
-                  <span class="prompt-tag">ACL-style pattern</span>
-                  <strong>I twisted my knee, felt a pop, and it swelled that evening.</strong>
-                  <p>Great for checking how the engine handles instability and same-day swelling.</p>
-                  <span class="prompt-action">Use this prompt</span>
-                </button>
-                <button class="prompt-card" type="button" data-sample="meniscus">
-                  <span class="prompt-tag">Meniscus-style pattern</span>
-                  <strong>I twisted while squatting and now the inside of the knee catches.</strong>
-                  <p>Useful for testing mechanical symptoms, joint-line pain, and rotational triggers.</p>
-                  <span class="prompt-action">Use this prompt</span>
-                </button>
-              </div>
+          <div class="output-grid">
+            <article class="output-card">
+              <h3>Shortlist</h3>
+              <p>
+                When the symptom pattern is strong enough, the engine returns ranked fit scores with a best stage and the
+                strongest supporting and penalizing features.
+              </p>
             </article>
 
-            <article class="usecase-panel" data-usecase-panel="overuse">
-              <div class="usecase-lead">
-                <p class="micro-label">Gradual or repetitive strain</p>
-                <h3>Useful when the story is less about one event and more about a pattern over time.</h3>
-                <p>
-                  These prompts emphasize stairs, sitting, running, morning stiffness, grinding, and longer timelines.
-                </p>
-              </div>
-              <div class="prompt-grid">
-                <button class="prompt-card" type="button" data-sample="pfps">
-                  <span class="prompt-tag">Front-of-knee pain</span>
-                  <strong>The front of my knee hurts with stairs and after sitting for a while.</strong>
-                  <p>Good for patellofemoral-style overuse patterns and activity-triggered pain.</p>
-                  <span class="prompt-action">Use this prompt</span>
-                </button>
-                <button class="prompt-card" type="button" data-sample="oa">
-                  <span class="prompt-tag">Degenerative pattern</span>
-                  <strong>My knee has been aching for months, stiff after rest, and crackles on stairs.</strong>
-                  <p>Good for chronic symptom timelines, stiffness, walking discomfort, and crepitus.</p>
-                  <span class="prompt-action">Use this prompt</span>
-                </button>
-              </div>
+            <article class="output-card">
+              <h3>Fallback</h3>
+              <p>
+                When the structured evidence is still too weak or too ambiguous, the system does not bluff. It stops with a
+                bounded fallback and shows the closest fits so far.
+              </p>
             </article>
 
-            <article class="usecase-panel" data-usecase-panel="mechanical">
-              <div class="usecase-lead">
-                <p class="micro-label">Motion problems</p>
-                <h3>Helpful when the complaint is about movement quality, not just pain.</h3>
-                <p>
-                  Catching, locking, buckling, reduced trust in the knee, and loss of motion often drive the next question
-                  batch.
-                </p>
-              </div>
-              <div class="prompt-grid">
-                <button class="prompt-card" type="button" data-sample="meniscus">
-                  <span class="prompt-tag">Locking and catching</span>
-                  <strong>It catches when I turn and sometimes feels like it gets stuck.</strong>
-                  <p>Shows how the question selector pivots toward mechanical follow-up instead of asking everything.</p>
-                  <span class="prompt-action">Use this prompt</span>
-                </button>
-                <button class="prompt-card" type="button" data-sample="acl">
-                  <span class="prompt-tag">Giving way</span>
-                  <strong>It gives way when I pivot and I do not trust it in sport-like movement.</strong>
-                  <p>Useful for seeing how instability drives the shortlist and the refinement questions.</p>
-                  <span class="prompt-action">Use this prompt</span>
-                </button>
-              </div>
-            </article>
-
-            <article class="usecase-panel" data-usecase-panel="safety">
-              <div class="usecase-lead">
-                <p class="micro-label">Do not bury safety signals</p>
-                <h3>Use this to test where the engine stops ranking and tells you to get urgent care.</h3>
-                <p>
-                  The current safety layer is global. It looks for hot and red knee with fever, deformity, and major trauma
-                  with severe weight-bearing difficulty.
-                </p>
-              </div>
-              <div class="prompt-grid">
-                <button class="prompt-card" type="button" data-sample="redflag">
-                  <span class="prompt-tag">Inflammatory red flag</span>
-                  <strong>My knee is hot and red, I have a fever, and it is getting hard to put weight on it.</strong>
-                  <p>Shows the urgent hot-red-fever escalation path.</p>
-                  <span class="prompt-action">Use this prompt</span>
-                </button>
-                <button class="prompt-card" type="button" data-sample="trauma">
-                  <span class="prompt-tag">Trauma red flag</span>
-                  <strong>I had a major fall, the knee looks out of place, and I can barely stand on it.</strong>
-                  <p>Shows the deformity and major-trauma escalation behavior.</p>
-                  <span class="prompt-action">Use this prompt</span>
-                </button>
-              </div>
+            <article class="output-card">
+              <h3>Safety escalation</h3>
+              <p>
+                When the pattern crosses urgent safety rules, the disease-ranking loop is interrupted and the result becomes a
+                direct escalation message.
+              </p>
             </article>
           </div>
         </section>
 
         <section class="workspace-section" id="demo">
           <div class="section-heading">
-            <p class="kicker">Guided check</p>
-            <h2>The website is also the product.</h2>
-            <p>
-              Start with your own complaint or load a sample. The workspace below talks to the live engine and shows the
-              real session state, not a mocked flow.
+            <p class="eyebrow">Live demo</p>
+            <h2>The website is also the main product surface.</h2>
+            <p class="section-note">
+              Start with your own complaint or load one of the sample prompts below. The workspace talks to the live engine
+              and shows real session state, not a mocked conversation.
             </p>
           </div>
 
           <div class="workspace-grid">
-            <section class="console-card start-card">
-              <div class="console-head">
+            <section class="workspace-card entry-card">
+              <div class="panel-head">
                 <div>
-                  <p class="micro-label">Entry</p>
-                  <h3>Complaint input</h3>
+                  <p class="mini-label">Entry</p>
+                  <h3>Start a guided check</h3>
                 </div>
                 <button class="ghost-button" id="reset-demo" type="button">Reset</button>
               </div>
 
               <form id="start-form" class="entry-form">
-                <div class="field-row">
-                  <label class="field field-compact">
-                    <span>Session label</span>
-                    <input id="patient-id" name="patientId" type="text" placeholder="demo_001" />
-                  </label>
-                  <div class="helper-card">
-                    Sessions can be reused briefly inside the debounce window so the engine can continue an in-progress check.
-                  </div>
-                </div>
+                <label class="field field-compact">
+                  <span>Session label</span>
+                  <input id="patient-id" name="patientId" type="text" placeholder="demo_001" />
+                </label>
 
                 <label class="field">
                   <span>Describe the knee problem</span>
                   <textarea
                     id="complaint-text"
                     name="text"
-                    rows="8"
+                    rows="9"
                     placeholder="Example: I twisted my knee playing football, felt a pop, it swelled that evening, and now it gives way."
                     required
                   ></textarea>
                 </label>
 
                 <div class="sample-row">
-                  <button class="sample-button" type="button" data-sample="acl">Load ACL example</button>
-                  <button class="sample-button" type="button" data-sample="meniscus">Load meniscus example</button>
-                  <button class="sample-button" type="button" data-sample="pfps">Load front pain example</button>
-                  <button class="sample-button" type="button" data-sample="redflag">Load safety example</button>
+                  <button class="sample-button" type="button" data-sample="acl">Twist and pop</button>
+                  <button class="sample-button" type="button" data-sample="meniscus">Catch and turn</button>
+                  <button class="sample-button" type="button" data-sample="pfps">Front pain</button>
+                  <button class="sample-button" type="button" data-sample="oa">Months of ache</button>
+                  <button class="sample-button" type="button" data-sample="redflag">Hot red knee</button>
+                  <button class="sample-button" type="button" data-sample="trauma">Major fall</button>
                 </div>
 
                 <div class="workspace-note">
-                  Current build is knee-only and returns fit scores, fallback, or safety escalation. It is not a diagnosis.
+                  Current scope is knee-only. The result is a fit score, fallback, or escalation, not a medical diagnosis.
                 </div>
 
                 <button class="button primary wide" id="start-button" type="submit">Start guided check</button>
@@ -349,11 +277,11 @@
               <div class="status-banner" id="status-banner" hidden></div>
             </section>
 
-            <section class="console-card session-card">
-              <div class="console-head">
+            <section class="workspace-card live-card">
+              <div class="panel-head">
                 <div>
-                  <p class="micro-label">Live state</p>
-                  <h3>Interview workspace</h3>
+                  <p class="mini-label">Session</p>
+                  <h3>Current interview state</h3>
                 </div>
                 <button class="ghost-button" id="load-ledger" type="button" disabled>Refresh ledger</button>
               </div>
@@ -374,12 +302,12 @@
               </div>
 
               <section class="question-shell" id="question-card">
-                <div class="panel-heading">
+                <div class="panel-head">
                   <div>
-                    <p class="micro-label">Follow-up</p>
+                    <p class="mini-label">Follow-up</p>
                     <h3>Current questions</h3>
                   </div>
-                  <p id="question-message">Start a session to see the interview prompt.</p>
+                  <p class="question-message" id="question-message">Start a session to see the interview prompt.</p>
                 </div>
 
                 <div class="note-list" id="clarification-notes"></div>
@@ -388,150 +316,75 @@
             </section>
           </div>
 
-          <div class="report-grid">
-            <section class="report-card">
-              <div class="panel-heading">
+          <div class="insight-grid">
+            <section class="insight-card">
+              <div class="panel-head">
                 <div>
-                  <p class="micro-label">Outcome</p>
-                  <h3>What the engine returns</h3>
+                  <p class="mini-label">Outcome</p>
+                  <h3>Result</h3>
                 </div>
-                <p>Shortlist, fallback, or escalation.</p>
               </div>
               <div id="result-body" class="result-body empty-state">No result yet.</div>
             </section>
 
-            <section class="report-card">
-              <div class="panel-heading">
+            <section class="insight-card">
+              <div class="panel-head">
                 <div>
-                  <p class="micro-label">Shortlist state</p>
+                  <p class="mini-label">Current shortlist</p>
                   <h3>Top candidates</h3>
                 </div>
-                <p>The engine's current internal lean.</p>
               </div>
               <div id="candidate-debug" class="candidate-list empty-state">No candidate state yet.</div>
             </section>
 
-            <section class="report-card report-card-wide">
-              <div class="panel-heading">
+            <section class="insight-card insight-card-wide">
+              <div class="panel-head">
                 <div>
-                  <p class="micro-label">Governance trail</p>
+                  <p class="mini-label">Governance</p>
                   <h3>Ledger</h3>
                 </div>
-                <p>Append-only events for the active session.</p>
               </div>
               <div id="ledger-output" class="ledger-list empty-state">Ledger not loaded.</div>
             </section>
           </div>
         </section>
 
-        <section class="process-section" id="how-it-works">
+        <section class="coverage-section" id="coverage">
           <div class="section-heading">
-            <p class="kicker">How it works</p>
-            <h2>A bounded loop, not an endless questionnaire.</h2>
-            <p>
-              The engine does not ask everything. It parses the complaint, scores structured disease nodes, and selects only
-              the next questions that are worth asking.
-            </p>
+            <p class="eyebrow">Coverage right now</p>
+            <h2>Narrow scope, stronger structure.</h2>
           </div>
 
-          <div class="process-grid">
-            <article class="process-card">
-              <span class="process-step">01</span>
-              <h3>Free text in</h3>
-              <p>
-                The parser reads the complaint and maps only what it can justify into the knee symptom registry. Unclear
-                leftovers stay unparsed rather than being hallucinated into the model.
-              </p>
+          <div class="coverage-grid">
+            <article class="coverage-card">
+              <h3>Condition nodes in this build</h3>
+              <ul>
+                <li>ACL tear</li>
+                <li>Meniscal tear</li>
+                <li>Patellofemoral pain syndrome</li>
+                <li>Knee osteoarthritis</li>
+              </ul>
             </article>
 
-            <article class="process-card">
-              <span class="process-step">02</span>
-              <h3>Targeted questions out</h3>
-              <p>
-                The selector looks at the live shortlist, unresolved evidence, and question conditions, then picks a small
-                batch instead of exhausting the whole questionnaire.
-              </p>
-            </article>
-
-            <article class="process-card">
-              <span class="process-step">03</span>
-              <h3>Bounded result</h3>
-              <p>
-                The session ends in one of three ways: a confident shortlist, a cautious fallback, or a safety escalation
-                when the red-flag layer interrupts the normal ranking loop.
-              </p>
-            </article>
-
-            <article class="process-card">
-              <span class="process-step">04</span>
-              <h3>Audit trail preserved</h3>
-              <p>
-                Major session events are written to an append-only ledger so the reasoning path can be inspected after the
-                interview instead of disappearing inside an opaque response.
-              </p>
-            </article>
-          </div>
-        </section>
-
-        <section class="architecture-section" id="architecture">
-          <div class="section-heading">
-            <p class="kicker">Why this works</p>
-            <h2>More governed than a generic symptom chatbot.</h2>
-            <p>
-              The product is intentionally narrow and inspectable. It is designed to demonstrate structured reasoning, not
-              broad open-domain medical advice.
-            </p>
-          </div>
-
-          <div class="principle-grid">
-            <article class="principle-card">
-              <p class="micro-label">Registry-bound</p>
-              <h3>Medical logic lives in explicit disease nodes.</h3>
-              <p>
-                Symptoms, questions, and disease patterns are all versioned in JSON registries rather than hidden in prompt
-                text or client-side heuristics.
-              </p>
-            </article>
-
-            <article class="principle-card">
-              <p class="micro-label">Evidence-aware</p>
-              <h3>Unknown stays unknown.</h3>
-              <p>
-                The scorer does not treat missing evidence as false. It weights explicit answers more strongly than inferred
-                clues and can hard-block nodes only when the contradiction is actually confirmed.
-              </p>
-            </article>
-
-            <article class="principle-card">
-              <p class="micro-label">Safety-first</p>
-              <h3>Red flags sit outside disease ranking.</h3>
-              <p>
-                Deformity, hot or red knee with fever, and major trauma with severe weight-bearing difficulty trigger
-                escalation because those patterns should not stay inside a normal shortlist loop.
-              </p>
-            </article>
-
-            <article class="principle-card">
-              <p class="micro-label">Deployable MVP</p>
-              <h3>Serverless frontend, durable backend.</h3>
-              <p>
-                The site runs on Vercel, persists sessions in Supabase, and keeps the reasoning core deterministic whether it
-                is hosted locally or as a public demo.
-              </p>
+            <article class="coverage-card">
+              <h3>Where the design is strict on purpose</h3>
+              <ul>
+                <li>Medical logic lives in versioned registries</li>
+                <li>Unknown evidence is not silently treated as false</li>
+                <li>Question selection is value-driven, not exhaustive</li>
+                <li>Safety rules sit outside disease ranking</li>
+              </ul>
             </article>
           </div>
         </section>
       </main>
 
       <footer class="site-footer">
-        <div>
-          <strong>Diagnostic Engine</strong>
-          <p>Knee-only beta for governed symptom reasoning, targeted follow-up, and inspectable session state.</p>
-        </div>
-        <div class="footer-note">
-          This website demonstrates structured triage mechanics. It does not provide a diagnosis and should not replace
-          urgent medical care.
-        </div>
+        <strong>Diagnostic Engine</strong>
+        <p>
+          A governed knee symptom interview for structured triage, targeted follow-up, and inspectable session state. It is
+          not a diagnosis and should not replace urgent medical care.
+        </p>
       </footer>
     </div>
 
