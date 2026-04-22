@@ -3,12 +3,12 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs/promises");
 const os = require("node:os");
 const path = require("node:path");
-const { ensureStore } = require("../state/db");
+const { createFileStore } = require("../state/file-store");
 const { createSession, getSession, upsertSymptoms } = require("../state/session");
 
 test("session symptom upsert strengthens and replaces weaker evidence", async () => {
   const dataDir = await fs.mkdtemp(path.join(os.tmpdir(), "diagnostic-engine-session-"));
-  const store = await ensureStore(dataDir);
+  const store = await createFileStore(dataDir);
   const session = await createSession(store, {
     patientId: "patient_1",
     bodyRegion: "knee",

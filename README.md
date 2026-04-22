@@ -1,20 +1,26 @@
 # Diagnostic Engine
 
-Registry-driven symptom reasoning engine for knee complaints. The rebuild keeps the architecture from the attached planning documents: controlled symptom vocabulary, strict disease nodes, deterministic scoring/question selection, global safety logic, append-only governance logging, and a bounded fallback path when the structured model cannot reach a defensible fit.
+Registry-driven symptom reasoning engine for knee complaints, now packaged as a mini MVP demo that can be hosted on Vercel with Supabase-backed persistence.
 
-The system does not diagnose. It produces ranked fit scores, highlights supporting and contradictory findings, and escalates when the evidence crosses safety rules.
+The system does not diagnose. It produces ranked fit scores, highlights supporting and contradictory findings, asks a bounded follow-up interview, and escalates on red-flag patterns.
 
-## What is in the repo
+## What changed
+
+The core reasoning model is still deterministic and registry-first, but the runtime is now deployment-oriented:
+
+- `public/` contains a lightweight browser demo.
+- `api/[...route].js` is a Vercel catch-all serverless handler.
+- `server/routes.js` is the shared HTTP/router layer for both local Node and Vercel.
+- `state/store.js` selects either local file storage or Supabase storage.
+- `supabase/migrations/0001_diagnostic_mvp.sql` creates the hosted session and ledger tables.
+
+## Repo layout
 
 ```text
 registry/
   symptoms/knee.json
   questions/knee.json
   diseases/knee/*.json
-  loader.js
-
-registry-validator/
-  validate.js
 
 engine/
   parser.js
@@ -24,46 +30,64 @@ engine/
   safety.js
   fallback.js
 
+server/
+  routes.js
+
+api/
+  [...route].js
+
 state/
   db.js
+  file-store.js
+  supabase-store.js
+  store.js
   session.js
   ledger.js
 
-api/
-  routes.js
+public/
+  index.html
+  app.js
+  styles.css
+
+supabase/
+  migrations/0001_diagnostic_mvp.sql
 
 benchmark/
-  profiles/*.json
-  harness.js
-
 tests/
 ```
 
-## Runtime model
+## How it works
 
-- `parser.js` converts free text into evidence keys from the registry only.
-- `scorer.js` evaluates every disease/stage pair with deterministic support, anti-symptom, and contradiction logic.
-- `selector.js` chooses the next highest-value unanswered questions.
-- `compiler.js` turns those questions into a user-facing form and maps answers back into evidence.
-- `safety.js` intercepts red-flag combinations such as fever plus hot/red joint, deformity, or major trauma with severe weight-bearing difficulty.
-- `fallback.js` is the bounded exit when the structured loop exhausts without a confident fit.
+1. `engine/parser.js` converts free text into controlled symptom evidence only.
+2. `engine/scorer.js` scores every disease/stage pair with support, anti-symptom, contradiction, and hard-block logic.
+3. `engine/selector.js` chooses the highest-value unresolved questions.
+4. `engine/compiler.js` turns those into a client-friendly question form.
+5. `engine/safety.js` short-circuits red-flag cases.
+6. `state/*` stores sessions and append-only ledgers either locally or in Supabase.
+7. `public/app.js` drives the mini MVP demo against the API.
 
-## State and governance
+## Current scope
 
-The rebuild uses a local file-backed document store under `.diagnostic-engine-data/` so the whole system runs end-to-end without requiring external infrastructure. Sessions are stored one JSON file per session, and the governance ledger is append-only JSONL per session. The interface is intentionally narrow so a future database adapter can replace the storage layer without changing the engine contracts.
-
-## Disease scope
-
-Current knee registry:
+The current registry covers:
 
 - ACL tear
 - Meniscal tear
 - Patellofemoral pain syndrome
 - Knee osteoarthritis
 
-## API
+## Hosted API
 
-`POST /session/start`
+Primary hosted paths:
+
+- `POST /api/session/start`
+- `POST /api/session/answer`
+- `GET /api/session/:id`
+- `GET /api/session/:id/ledger`
+- `GET /api/health`
+
+Compatibility rewrites also keep `/session/*` and `/health` working on Vercel.
+
+Example start payload:
 
 ```json
 {
@@ -72,80 +96,65 @@ Current knee registry:
 }
 ```
 
-`POST /session/answer`
-
-```json
-{
-  "sessionId": "sess_...",
-  "questionResponses": {
-    "knee_q_010_triggers": ["pivoting", "walking"],
-    "knee_q_002_location": "diffuse",
-    "knee_q_003_onset_style": "suddenly"
-  }
-}
-```
-
-`GET /session/:id/ledger`
-
-Returns the append-only audit trail for that session.
-
-## Setup
+## Local development
 
 ```bash
 cp .env.example .env
 npm install
-```
-
-This repo intentionally uses Node built-ins only, so `npm install` is effectively a no-op today but keeps the workflow conventional.
-
-Optional environment values:
-
-```bash
-PORT=3000
-DIAGNOSTIC_ENGINE_DATA_DIR=.diagnostic-engine-data
-SESSION_DEBOUNCE_MS=120000
-MAX_ROUNDS=3
-OPENAI_API_KEY=
-OPENAI_MODEL=
-```
-
-## Run
-
-```bash
 npm run validate-registry
 npm start
 ```
 
-## Test
+Local mode defaults to the file-backed store under `.diagnostic-engine-data/`.
+
+Key environment values:
+
+```bash
+PORT=3000
+STORAGE_DRIVER=file
+DIAGNOSTIC_ENGINE_DATA_DIR=.diagnostic-engine-data
+SESSION_DEBOUNCE_MS=120000
+MAX_ROUNDS=3
+SUPABASE_URL=
+SUPABASE_SERVICE_ROLE_KEY=
+SUPABASE_SCHEMA=public
+SUPABASE_SESSIONS_TABLE=diagnostic_sessions
+SUPABASE_LEDGER_TABLE=diagnostic_ledger_entries
+```
+
+## Vercel + Supabase deployment
+
+1. Create a Supabase project.
+2. Run `supabase/migrations/0001_diagnostic_mvp.sql` in the Supabase SQL editor.
+3. Add these environment variables in Vercel:
+
+```bash
+STORAGE_DRIVER=supabase
+SUPABASE_URL=...
+SUPABASE_SERVICE_ROLE_KEY=...
+SESSION_DEBOUNCE_MS=120000
+MAX_ROUNDS=3
+```
+
+4. Deploy the repo to Vercel.
+
+The browser demo talks only to the Vercel API. The Supabase service role key stays server-side in Vercel and is never exposed to the client.
+
+## Verification
 
 ```bash
 npm test
-```
-
-Current automated checks cover registry validation, scorer behavior, selector/compiler behavior, session merging, and an end-to-end ACL API flow.
-
-## Benchmark
-
-```bash
+node registry-validator/validate.js
 node benchmark/harness.js
-node benchmark/harness.js --disable-contradictions
-node benchmark/harness.js --binary-scoring
-node benchmark/harness.js --profile=acl_clear_acute_1
 ```
 
-The harness ships with 20 synthetic profiles spanning clean-cut cases, ambiguous/fallback cases, and safety escalations. It runs each profile 3 times and requires all runs to pass. On the executed rebuild, the default harness completed `20/20` passing profiles across `60/60` runs.
+Current checks cover registry validation, scorer behavior, selector/compiler behavior, session merging, an end-to-end ACL flow, and the 20-profile benchmark sweep.
 
-## Design constraints carried through from the planning docs
+## Design constraints retained from the planning docs
 
 - Symptom keys are observation-level only.
-- Disease nodes hold medical pattern logic; they do not contain question text.
-- Unknown evidence contributes zero instead of counting as false.
-- Hard-block contradictions suppress a disease only when the conflict is explicitly confirmed.
-- Question selection is value-driven, not exhaustive.
-- Safety rules live outside disease nodes.
-
-## Assumptions in this rebuild
-
-- The attached planning docs were treated as the canonical specification.
-- To keep the system executable in this environment, the parser is deterministic-first and registry-bounded rather than requiring a live external model.
-- The benchmark’s stage expectations were aligned with the actual stage semantics encoded in the rebuilt nodes where the distinction was structurally ambiguous.
+- Disease nodes contain pattern logic, not question wording.
+- Unknown evidence contributes zero rather than being treated as false.
+- Hard-block contradictions only suppress a disease when the conflict is explicitly confirmed.
+- Question selection is value-driven rather than exhaustive.
+- Safety rules remain global instead of being buried inside disease nodes.

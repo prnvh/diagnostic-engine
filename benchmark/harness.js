@@ -1,7 +1,7 @@
 const fs = require("node:fs/promises");
 const os = require("node:os");
 const path = require("node:path");
-const { answerDiagnosticSession, createServices, startDiagnosticSession } = require("../api/routes");
+const { answerDiagnosticSession, createServices, startDiagnosticSession } = require("../server/routes");
 const { buildConfig } = require("../lib/config");
 const { loadRegistry } = require("../registry/loader");
 const { getSession } = require("../state/session");
@@ -112,7 +112,7 @@ function selectOptionResponse(question, registry, profile) {
 async function runProfile(profile, runIndex, options) {
   const temporaryDataDir = await fs.mkdtemp(path.join(os.tmpdir(), `diagnostic-engine-${profile.id}-${runIndex}-`));
   const registry = loadRegistry();
-  const config = buildConfig({ dataDir: temporaryDataDir });
+  const config = buildConfig({ dataDir: temporaryDataDir, storeDriver: "file" });
   const services = await createServices({ registry, config });
 
   let response = await startDiagnosticSession(

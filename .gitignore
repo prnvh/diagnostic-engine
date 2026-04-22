@@ -209,3 +209,5 @@ __marimo__/
 # Diagnostic engine local runtime data
 .diagnostic-engine-data/
 benchmark/results/
+node_modules/
+.vercel/

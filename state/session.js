@@ -1,5 +1,4 @@
 const crypto = require("node:crypto");
-const { listJsonFiles, readJson, sessionFilePath, writeJsonAtomic } = require("./db");
 
 const STATUS_PRIORITY = {
   low_confidence: 1,
@@ -47,12 +46,11 @@ function mergeSymptomEntry(existingEntry, incomingEntry) {
 }
 
 async function getSession(store, sessionId) {
-  return readJson(sessionFilePath(store, sessionId));
+  return store.getSession(sessionId);
 }
 
 async function writeSession(store, session) {
-  await writeJsonAtomic(sessionFilePath(store, session.sessionId), session);
-  return session;
+  return store.saveSession(session);
 }
 
 async function createSession(store, { patientId, bodyRegion = "knee", rawText = "", now = new Date() }) {
@@ -65,6 +63,7 @@ async function createSession(store, { patientId, bodyRegion = "knee", rawText = 
     candidates: [],
     eliminatedNodes: [],
     questionLog: [],
+    latestForm: null,
     rawMessages: rawText ? [{ text: rawText, at: createdAt, source: "user" }] : [],
     parserOutput: { unparsed: [] },
     round: 0,
@@ -140,12 +139,14 @@ async function recordQuestionBatch(store, sessionId, questions, round) {
 }
 
 async function listSessions(store) {
-  const files = await listJsonFiles(store.sessionsDir);
-  const sessions = await Promise.all(files.map((file) => readJson(file)));
-  return sessions.filter(Boolean);
+  return store.listSessions();
 }
 
 async function findReusableSession(store, { patientId, bodyRegion = "knee", now = new Date() }) {
+  if (typeof store.findReusableSession === "function") {
+    return store.findReusableSession({ patientId, bodyRegion, now });
+  }
+
   const sessions = await listSessions(store);
   return sessions.find((session) => {
     if (session.patientId !== patientId || session.bodyRegion !== bodyRegion) {

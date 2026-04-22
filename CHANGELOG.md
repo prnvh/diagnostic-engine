@@ -11,6 +11,16 @@
 - Added persistent session storage plus append-only governance ledger files.
 - Rebuilt the HTTP API orchestration for `/session/start`, `/session/answer`, and `/session/:id/ledger`.
 
+### Tailored for Vercel + Supabase MVP hosting
+
+- Replaced the hardwired filesystem assumption with a storage adapter boundary.
+- Added a Supabase-backed store for sessions and append-only ledger entries.
+- Kept the file-backed store for local development, tests, and the benchmark harness.
+- Moved shared HTTP logic into `server/routes.js` and added `api/[...route].js` for Vercel serverless deployment.
+- Added a hosted demo UI in `public/` so the project can be shown directly as a mini MVP instead of only exposing raw API routes.
+- Added `vercel.json` rewrites plus a Supabase SQL migration under `supabase/migrations/`.
+- Added `GET /api/health` and `GET /api/session/:id` to make deployment and session inspection easier.
+
 ### Added verification and research tooling
 
 - Added a benchmark harness with 20 synthetic profiles and support for contradiction and binary-scoring ablations.
@@ -22,8 +32,9 @@
 - `npm test`: passed
 - `node benchmark/harness.js`: passed all 20 profiles across 60 runs
 - `node registry-validator/validate.js`: passed
+- Local HTTP smoke test: passed for `/`, `/api/health`, and `/api/session/start`
 
 ### Practical implementation notes
 
-- Chose a file-backed document store for sessions and ledgers so the rebuild runs end-to-end without external services.
-- Kept the architecture modular so a future database adapter or remote parser can be swapped in without rewriting engine logic.
+- The hosted path is now Vercel API plus Supabase storage, while local work still defaults to the file-backed store.
+- The deterministic engine contracts were left intact so deployment changes did not alter registry semantics or benchmark behavior.

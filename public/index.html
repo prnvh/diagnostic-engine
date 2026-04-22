@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Knee Diagnostic Engine Demo</title>
+    <meta
+      name="description"
+      content="Mini MVP demo for a registry-driven knee symptom reasoning engine hosted on Vercel with Supabase-backed session state."
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Mini MVP Demo</p>
+          <h1>Structured knee symptom triage, packaged for a Vercel demo.</h1>
+          <p class="hero-text">
+            This demo takes a free-text complaint, converts it into controlled evidence, asks a few discriminating questions,
+            and returns ranked fit scores or safety escalation. It is not a diagnosis.
+          </p>
+          <div class="hero-pills">
+            <span>Deterministic engine</span>
+            <span>Supabase session store</span>
+            <span>Vercel-ready API</span>
+          </div>
+        </div>
+        <aside class="hero-panel">
+          <h2>What this demo proves</h2>
+          <ul>
+            <li>Free text can be parsed into a bounded symptom registry.</li>
+            <li>Question selection stays targeted instead of exhaustive.</li>
+            <li>State survives across stateless serverless invocations.</li>
+            <li>Every session keeps an append-only audit ledger.</li>
+          </ul>
+        </aside>
+      </header>
+
+      <main class="layout">
+        <section class="card start-card">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Start Session</p>
+              <h2>Seed the engine with one complaint</h2>
+            </div>
+            <button class="ghost-button" id="reset-demo" type="button">Reset</button>
+          </div>
+
+          <div class="sample-bar">
+            <button class="sample-button" type="button" data-sample="acl">ACL-style case</button>
+            <button class="sample-button" type="button" data-sample="meniscus">Meniscus-style case</button>
+            <button class="sample-button" type="button" data-sample="redflag">Safety red flag</button>
+          </div>
+
+          <form id="start-form" class="stack">
+            <label class="field">
+              <span>Patient / demo id</span>
+              <input id="patient-id" name="patientId" type="text" placeholder="demo_001" />
+            </label>
+
+            <label class="field">
+              <span>Initial complaint</span>
+              <textarea
+                id="complaint-text"
+                name="text"
+                rows="7"
+                placeholder="Example: I twisted my knee playing football, felt a pop, it swelled that evening, and now it gives way."
+                required
+              ></textarea>
+            </label>
+
+            <button class="primary-button" id="start-button" type="submit">Start interview</button>
+          </form>
+
+          <div class="status-banner" id="status-banner" hidden></div>
+        </section>
+
+        <section class="card live-card">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Live Session</p>
+              <h2>Question flow and result</h2>
+            </div>
+            <button class="ghost-button" id="load-ledger" type="button" disabled>Load ledger</button>
+          </div>
+
+          <div class="meta-grid" id="session-meta">
+            <div class="meta-item">
+              <span class="meta-label">Session</span>
+              <strong id="meta-session-id">Not started</strong>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Status</span>
+              <strong id="meta-status">Idle</strong>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Round</span>
+              <strong id="meta-round">0</strong>
+            </div>
+          </div>
+
+          <div class="stack" id="result-stack">
+            <section class="subcard" id="question-card">
+              <div class="subcard-head">
+                <h3>Next questions</h3>
+                <p id="question-message">Start a session to see the interview prompt.</p>
+              </div>
+              <div class="note-list" id="clarification-notes"></div>
+              <form id="question-form" class="stack"></form>
+            </section>
+
+            <section class="subcard" id="result-card">
+              <div class="subcard-head">
+                <h3>Engine output</h3>
+                <p>Ranked fit scores, fallback, or escalation.</p>
+              </div>
+              <div id="result-body" class="result-body empty-state">No result yet.</div>
+            </section>
+
+            <section class="subcard" id="debug-card">
+              <div class="subcard-head">
+                <h3>Top candidates</h3>
+                <p>The engine’s current internal shortlist.</p>
+              </div>
+              <div id="candidate-debug" class="candidate-list empty-state">No candidate state yet.</div>
+            </section>
+
+            <section class="subcard" id="ledger-card">
+              <div class="subcard-head">
+                <h3>Ledger</h3>
+                <p>Append-only audit trail for the current session.</p>
+              </div>
+              <pre id="ledger-output" class="ledger-output empty-state">Ledger not loaded.</pre>
+            </section>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="/app.js" defer></script>
+  </body>
+</html>

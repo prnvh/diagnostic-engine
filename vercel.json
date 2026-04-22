@@ -1,0 +1,18 @@
+{
+  "functions": {
+    "api/[...route].js": {
+      "runtime": "nodejs20.x",
+      "maxDuration": 10
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/health",
+      "destination": "/api/health"
+    },
+    {
+      "source": "/session/(.*)",
+      "destination": "/api/session/$1"
+    }
+  ]
+}

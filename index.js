@@ -1,5 +1,5 @@
 const { buildConfig, loadEnvFile } = require("./lib/config");
-const { createServer, createServices } = require("./api/routes");
+const { createServer, createServices } = require("./server/routes");
 const { loadRegistry } = require("./registry/loader");
 const { loadAndValidateRegistry } = require("./registry-validator/validate");
 
@@ -12,7 +12,7 @@ async function main() {
   const server = createServer(services);
 
   server.listen(config.port, () => {
-    console.log(`Diagnostic engine listening on http://localhost:${config.port}`);
+    console.log(`Diagnostic engine listening on http://localhost:${config.port} using ${services.store.kind} storage`);
   });
 }
 

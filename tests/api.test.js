@@ -3,7 +3,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs/promises");
 const os = require("node:os");
 const path = require("node:path");
-const { answerDiagnosticSession, createServices, startDiagnosticSession } = require("../api/routes");
+const { answerDiagnosticSession, createServices, startDiagnosticSession } = require("../server/routes");
 const { buildConfig } = require("../lib/config");
 const { loadRegistry } = require("../registry/loader");
 
@@ -11,7 +11,7 @@ test("end-to-end ACL flow returns a confident candidate", async () => {
   const dataDir = await fs.mkdtemp(path.join(os.tmpdir(), "diagnostic-engine-api-"));
   const services = await createServices({
     registry: loadRegistry(),
-    config: buildConfig({ dataDir })
+    config: buildConfig({ dataDir, storeDriver: "file" })
   });
 
   let response = await startDiagnosticSession(services, {
