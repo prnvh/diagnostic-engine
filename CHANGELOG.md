@@ -20,6 +20,7 @@
 - Added a hosted demo UI in `public/` so the project can be shown directly as a mini MVP instead of only exposing raw API routes.
 - Added `vercel.json` rewrites plus a Supabase SQL migration under `supabase/migrations/`.
 - Added `GET /api/health` and `GET /api/session/:id` to make deployment and session inspection easier.
+- Added `SYSTEM_ARCHITECTURE.md` to document the current design, data flow, module boundaries, and deployment shape.
 
 ### Added verification and research tooling
 

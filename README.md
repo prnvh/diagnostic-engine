@@ -4,6 +4,8 @@ Registry-driven symptom reasoning engine for knee complaints, now packaged as a 
 
 The system does not diagnose. It produces ranked fit scores, highlights supporting and contradictory findings, asks a bounded follow-up interview, and escalates on red-flag patterns.
 
+For a deeper walkthrough of the runtime and component boundaries, see [SYSTEM_ARCHITECTURE.md](SYSTEM_ARCHITECTURE.md).
+
 ## What changed
 
 The core reasoning model is still deterministic and registry-first, but the runtime is now deployment-oriented:
