@@ -386,32 +386,40 @@ async function tryServeStaticAsset(services, pathname, response) {
 
   const publicRoot = path.resolve(services.config.cwd, "public");
   const assetPath = pathname === "/" ? "index.html" : pathname.replace(/^\/+/, "");
-  const filePath = path.resolve(publicRoot, assetPath);
+  const candidatePaths = [path.resolve(publicRoot, assetPath)];
 
-  if (!filePath.startsWith(publicRoot)) {
-    return false;
+  if (!path.extname(assetPath)) {
+    candidatePaths.push(path.resolve(publicRoot, assetPath, "index.html"));
   }
 
-  try {
-    const stat = await fs.stat(filePath);
-    if (!stat.isFile()) {
+  for (const filePath of candidatePaths) {
+    if (!filePath.startsWith(publicRoot)) {
       return false;
     }
 
-    const contentType = STATIC_CONTENT_TYPES[path.extname(filePath).toLowerCase()] || "application/octet-stream";
-    const content = await fs.readFile(filePath);
-    response.writeHead(200, {
-      "cache-control": contentType.includes("text/html") ? "no-store" : "public, max-age=600",
-      "content-type": contentType
-    });
-    response.end(content);
-    return true;
-  } catch (error) {
-    if (error.code === "ENOENT") {
-      return false;
+    try {
+      const stat = await fs.stat(filePath);
+      if (!stat.isFile()) {
+        continue;
+      }
+
+      const contentType = STATIC_CONTENT_TYPES[path.extname(filePath).toLowerCase()] || "application/octet-stream";
+      const content = await fs.readFile(filePath);
+      response.writeHead(200, {
+        "cache-control": contentType.includes("text/html") ? "no-store" : "public, max-age=600",
+        "content-type": contentType
+      });
+      response.end(content);
+      return true;
+    } catch (error) {
+      if (error.code === "ENOENT") {
+        continue;
+      }
+      throw error;
     }
-    throw error;
   }
+
+  return false;
 }
 
 function createRequestHandler(services) {
