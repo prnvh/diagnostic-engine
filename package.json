@@ -1,0 +1,20 @@
+{
+  "name": "diagnostic-engine",
+  "version": "1.0.0",
+  "description": "Registry-driven symptom reasoning engine for knee complaints.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js",
+    "test": "node --test",
+    "validate-registry": "node registry-validator/validate.js",
+    "benchmark": "node benchmark/harness.js"
+  },
+  "keywords": [
+    "diagnostic",
+    "symptom-engine",
+    "knee",
+    "clinical-reasoning"
+  ],
+  "license": "Apache-2.0"
+}

@@ -1,0 +1,60 @@
+{
+  "id": "knee_osteoarthritis",
+  "name": "Knee osteoarthritis",
+  "category": "degenerative_joint_disease",
+  "base_symptoms": [
+    { "key": "gradual_onset_over_months", "weight": 5, "match_type": "binary", "expected_value": true },
+    { "key": "prominent_morning_stiffness", "weight": 4, "match_type": "range", "expected_range": [2, 5] },
+    { "key": "symptoms_worse_after_rest", "weight": 4, "match_type": "range", "expected_range": [2, 5] },
+    { "key": "crepitus_grinding", "weight": 4, "match_type": "range", "expected_range": [2, 5] },
+    { "key": "discomfort_while_walking", "weight": 3, "match_type": "range", "expected_range": [2, 5] },
+    { "key": "knee_swelling", "weight": 2, "match_type": "range", "expected_range": [1, 4] }
+  ],
+  "base_anti_symptoms": [
+    { "key": "twisting_or_pivoting_mechanism", "weight": 4, "match_type": "binary", "expected_value": false },
+    { "key": "pop_at_injury", "weight": 4, "match_type": "binary", "expected_value": false },
+    { "key": "rapid_swelling_within_24h", "weight": 4, "match_type": "binary", "expected_value": false },
+    { "key": "instability_giving_way", "weight": 4, "match_type": "range", "expected_range": [0, 2] }
+  ],
+  "stage_profiles": {
+    "acute": {
+      "symptoms": [
+        { "key": "symptoms_worse_after_rest", "weight": 2, "match_type": "range", "expected_range": [1, 3] },
+        { "key": "difficulty_weight_bearing", "weight": 2, "match_type": "range", "expected_range": [1, 3] }
+      ],
+      "anti_symptoms": [
+        { "key": "injury_related_start", "weight": 4, "match_type": "binary", "expected_value": false }
+      ]
+    },
+    "subacute": {
+      "symptoms": [
+        { "key": "timeline_6_weeks_to_3_months", "weight": 3, "match_type": "binary", "expected_value": true },
+        { "key": "pain_with_stairs", "weight": 2, "match_type": "range", "expected_range": [1, 4] },
+        { "key": "activity_limitation", "weight": 3, "match_type": "range", "expected_range": [1, 4] }
+      ],
+      "anti_symptoms": [
+        { "key": "rapid_swelling_within_24h", "weight": 4, "match_type": "binary", "expected_value": false }
+      ]
+    },
+    "chronic": {
+      "symptoms": [
+        { "key": "timeline_gt_3_months", "weight": 5, "match_type": "binary", "expected_value": true },
+        { "key": "crepitus_grinding", "weight": 4, "match_type": "range", "expected_range": [2, 5] },
+        { "key": "prominent_morning_stiffness", "weight": 4, "match_type": "range", "expected_range": [2, 5] },
+        { "key": "symptoms_worse_after_rest", "weight": 4, "match_type": "range", "expected_range": [2, 5] },
+        { "key": "pain_with_stairs", "weight": 3, "match_type": "range", "expected_range": [2, 5] },
+        { "key": "difficulty_weight_bearing", "weight": 4, "match_type": "range", "expected_range": [1, 5] }
+      ],
+      "anti_symptoms": [
+        { "key": "injury_related_start", "weight": 4, "match_type": "binary", "expected_value": false }
+      ]
+    }
+  },
+  "soft_contradictions": [
+    { "key": "pop_at_injury", "penalty": 25, "match_type": "binary", "expected_value": true },
+    { "key": "rapid_swelling_within_24h", "penalty": 20, "match_type": "binary", "expected_value": true },
+    { "key": "twisting_or_pivoting_mechanism", "penalty": 20, "match_type": "binary", "expected_value": true },
+    { "key": "instability_giving_way", "penalty": 20, "match_type": "range", "expected_range": [3, 5] }
+  ],
+  "hard_contradictions": []
+}

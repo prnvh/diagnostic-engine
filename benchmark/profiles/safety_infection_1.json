@@ -1,0 +1,1 @@
+{"id":"safety_infection_1","expectedOutcome":"escalation","initialText":"Since yesterday my knee is very swollen, hot, red, and I have a fever.","groundTruth":{"timeline_lt_1_week":true,"knee_swelling":5,"joint_warmth":true,"redness":true,"fever":true,"pain_severity":4}}

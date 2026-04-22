@@ -1,0 +1,569 @@
+{
+  "body_part": "knee",
+  "questions": [
+    {
+      "id": "knee_q_001_laterality",
+      "text": "Which knee is affected?",
+      "type": "single_select",
+      "priority": 10,
+      "phase": "routing",
+      "question_role": "presence",
+      "maps_to": ["laterality_left", "laterality_right", "laterality_bilateral"],
+      "options": [
+        { "id": "left", "label": "Left" },
+        { "id": "right", "label": "Right" },
+        { "id": "both", "label": "Both" }
+      ],
+      "value_mapping": {
+        "left": { "laterality_left": true, "laterality_right": false, "laterality_bilateral": false },
+        "right": { "laterality_left": false, "laterality_right": true, "laterality_bilateral": false },
+        "both": { "laterality_left": false, "laterality_right": false, "laterality_bilateral": true }
+      },
+      "requires": [],
+      "ask_if": [],
+      "blocks_if": [],
+      "helps_discriminate": []
+    },
+    {
+      "id": "knee_q_002_location",
+      "text": "Where is the main problem in the knee?",
+      "type": "single_select",
+      "priority": 10,
+      "phase": "universal",
+      "question_role": "presence",
+      "maps_to": ["pain_location_front", "pain_location_medial", "pain_location_lateral", "pain_location_back", "pain_location_diffuse"],
+      "options": [
+        { "id": "front", "label": "Front / around kneecap" },
+        { "id": "inner", "label": "Inner side" },
+        { "id": "outer", "label": "Outer side" },
+        { "id": "back", "label": "Back of knee" },
+        { "id": "diffuse", "label": "Hard to pinpoint" }
+      ],
+      "value_mapping": {
+        "front": { "pain_location_front": 5, "pain_location_medial": 0, "pain_location_lateral": 0, "pain_location_back": 0, "pain_location_diffuse": 0 },
+        "inner": { "pain_location_front": 0, "pain_location_medial": 5, "pain_location_lateral": 0, "pain_location_back": 0, "pain_location_diffuse": 0 },
+        "outer": { "pain_location_front": 0, "pain_location_medial": 0, "pain_location_lateral": 5, "pain_location_back": 0, "pain_location_diffuse": 0 },
+        "back": { "pain_location_front": 0, "pain_location_medial": 0, "pain_location_lateral": 0, "pain_location_back": 5, "pain_location_diffuse": 0 },
+        "diffuse": { "pain_location_front": 0, "pain_location_medial": 0, "pain_location_lateral": 0, "pain_location_back": 0, "pain_location_diffuse": 5 }
+      },
+      "requires": [],
+      "ask_if": [],
+      "blocks_if": [],
+      "helps_discriminate": ["knee_meniscal_tear", "knee_patellofemoral_pain_syndrome", "knee_osteoarthritis"]
+    },
+    {
+      "id": "knee_q_003_onset_style",
+      "text": "Did this start suddenly or gradually?",
+      "type": "single_select",
+      "priority": 10,
+      "phase": "universal",
+      "question_role": "presence",
+      "maps_to": ["sudden_onset", "gradual_onset_over_weeks", "gradual_onset_over_months"],
+      "options": [
+        { "id": "suddenly", "label": "Suddenly" },
+        { "id": "weeks", "label": "Over days or weeks" },
+        { "id": "months", "label": "Over months" }
+      ],
+      "value_mapping": {
+        "suddenly": { "sudden_onset": true, "gradual_onset_over_weeks": false, "gradual_onset_over_months": false },
+        "weeks": { "sudden_onset": false, "gradual_onset_over_weeks": true, "gradual_onset_over_months": false },
+        "months": { "sudden_onset": false, "gradual_onset_over_weeks": false, "gradual_onset_over_months": true }
+      },
+      "requires": [],
+      "ask_if": [],
+      "blocks_if": [],
+      "helps_discriminate": ["knee_acl_tear", "knee_meniscal_tear", "knee_patellofemoral_pain_syndrome", "knee_osteoarthritis"]
+    },
+    {
+      "id": "knee_q_004_injury_related",
+      "text": "Did it begin after an injury, awkward movement, or sports incident?",
+      "type": "single_select",
+      "priority": 10,
+      "phase": "universal",
+      "question_role": "presence",
+      "maps_to": ["injury_related_start", "atraumatic_start"],
+      "options": [
+        { "id": "yes", "label": "Yes" },
+        { "id": "no", "label": "No" },
+        { "id": "unsure", "label": "Not sure" }
+      ],
+      "value_mapping": {
+        "yes": { "injury_related_start": true, "atraumatic_start": false },
+        "no": { "injury_related_start": false, "atraumatic_start": true },
+        "unsure": { "injury_related_start": null, "atraumatic_start": null }
+      },
+      "requires": [],
+      "ask_if": [],
+      "blocks_if": [],
+      "helps_discriminate": ["knee_acl_tear", "knee_meniscal_tear", "knee_patellofemoral_pain_syndrome", "knee_osteoarthritis"]
+    },
+    {
+      "id": "knee_q_005_timeline",
+      "text": "How long has this been going on?",
+      "type": "single_select",
+      "priority": 9,
+      "phase": "universal",
+      "question_role": "presence",
+      "maps_to": ["timeline_lt_1_week", "timeline_1_to_6_weeks", "timeline_6_weeks_to_3_months", "timeline_gt_3_months"],
+      "options": [
+        { "id": "lt_1_week", "label": "Less than 1 week" },
+        { "id": "1_to_6_weeks", "label": "1 to 6 weeks" },
+        { "id": "6_weeks_to_3_months", "label": "6 weeks to 3 months" },
+        { "id": "gt_3_months", "label": "More than 3 months" }
+      ],
+      "value_mapping": {
+        "lt_1_week": { "timeline_lt_1_week": true, "timeline_1_to_6_weeks": false, "timeline_6_weeks_to_3_months": false, "timeline_gt_3_months": false },
+        "1_to_6_weeks": { "timeline_lt_1_week": false, "timeline_1_to_6_weeks": true, "timeline_6_weeks_to_3_months": false, "timeline_gt_3_months": false },
+        "6_weeks_to_3_months": { "timeline_lt_1_week": false, "timeline_1_to_6_weeks": false, "timeline_6_weeks_to_3_months": true, "timeline_gt_3_months": false },
+        "gt_3_months": { "timeline_lt_1_week": false, "timeline_1_to_6_weeks": false, "timeline_6_weeks_to_3_months": false, "timeline_gt_3_months": true }
+      },
+      "requires": [],
+      "ask_if": [],
+      "blocks_if": [],
+      "helps_discriminate": ["stage_assignment"]
+    },
+    {
+      "id": "knee_q_006_swelling",
+      "text": "How much swelling has there been in the knee?",
+      "type": "scale_0_5",
+      "priority": 9,
+      "phase": "universal",
+      "question_role": "presence",
+      "maps_to": ["knee_swelling"],
+      "options": [],
+      "value_mapping": {},
+      "requires": [],
+      "ask_if": [],
+      "blocks_if": [],
+      "helps_discriminate": ["knee_acl_tear", "knee_meniscal_tear", "knee_osteoarthritis"]
+    },
+    {
+      "id": "knee_q_007_instability",
+      "text": "Does the knee give way or feel unstable?",
+      "type": "scale_0_5",
+      "priority": 10,
+      "phase": "universal",
+      "question_role": "presence",
+      "maps_to": ["instability_giving_way", "recurrent_giving_way"],
+      "options": [],
+      "value_mapping": {},
+      "requires": [],
+      "ask_if": [],
+      "blocks_if": [],
+      "helps_discriminate": ["knee_acl_tear"]
+    },
+    {
+      "id": "knee_q_008_mechanical",
+      "text": "Does the knee click, catch, or lock?",
+      "type": "single_select",
+      "priority": 9,
+      "phase": "universal",
+      "question_role": "presence",
+      "maps_to": ["clicking", "catching", "locking"],
+      "options": [
+        { "id": "none", "label": "None of those" },
+        { "id": "clicking", "label": "Mostly clicking" },
+        { "id": "catching", "label": "It catches" },
+        { "id": "locking", "label": "It locks or gets stuck" }
+      ],
+      "value_mapping": {
+        "none": { "clicking": 0, "catching": 0, "locking": 0 },
+        "clicking": { "clicking": 5, "catching": 0, "locking": 0 },
+        "catching": { "clicking": 2, "catching": 5, "locking": 0 },
+        "locking": { "clicking": 0, "catching": 2, "locking": 5 }
+      },
+      "requires": [],
+      "ask_if": [],
+      "blocks_if": [],
+      "helps_discriminate": ["knee_meniscal_tear", "knee_acl_tear"]
+    },
+    {
+      "id": "knee_q_009_pain_severity",
+      "text": "How bad is the knee pain overall?",
+      "type": "scale_0_5",
+      "priority": 7,
+      "phase": "universal",
+      "question_role": "presence",
+      "maps_to": ["pain_severity"],
+      "options": [],
+      "value_mapping": {},
+      "requires": [],
+      "ask_if": [],
+      "blocks_if": [],
+      "helps_discriminate": []
+    },
+    {
+      "id": "knee_q_010_triggers",
+      "text": "Which activities make it worse?",
+      "type": "multi_select",
+      "priority": 10,
+      "phase": "universal",
+      "question_role": "presence",
+      "maps_to": [
+        "pain_with_stairs",
+        "pain_with_squatting",
+        "pain_with_running",
+        "pain_with_jumping",
+        "difficulty_with_pivoting_or_cutting",
+        "pain_after_prolonged_sitting",
+        "discomfort_while_walking"
+      ],
+      "options": [
+        { "id": "stairs", "label": "Stairs" },
+        { "id": "squatting", "label": "Squatting / deep bending" },
+        { "id": "running", "label": "Running" },
+        { "id": "jumping", "label": "Jumping" },
+        { "id": "pivoting", "label": "Turning / pivoting" },
+        { "id": "sitting", "label": "Sitting with knee bent" },
+        { "id": "walking", "label": "Walking" }
+      ],
+      "value_mapping": {
+        "stairs": { "pain_with_stairs": 5 },
+        "squatting": { "pain_with_squatting": 5 },
+        "running": { "pain_with_running": 5 },
+        "jumping": { "pain_with_jumping": 5 },
+        "pivoting": { "difficulty_with_pivoting_or_cutting": 5 },
+        "sitting": { "pain_after_prolonged_sitting": 5 },
+        "walking": { "discomfort_while_walking": 5 }
+      },
+      "requires": [],
+      "ask_if": [],
+      "blocks_if": [],
+      "helps_discriminate": ["knee_acl_tear", "knee_patellofemoral_pain_syndrome", "knee_osteoarthritis"]
+    },
+    {
+      "id": "knee_q_011_weight_bearing",
+      "text": "How much trouble do you have putting weight on the knee?",
+      "type": "scale_0_5",
+      "priority": 9,
+      "phase": "universal",
+      "question_role": "presence",
+      "maps_to": ["difficulty_weight_bearing"],
+      "options": [],
+      "value_mapping": {},
+      "requires": [],
+      "ask_if": [],
+      "blocks_if": [],
+      "helps_discriminate": ["global_red_flag_logic", "knee_acl_tear", "knee_osteoarthritis"]
+    },
+    {
+      "id": "knee_q_012_rest_stiffness",
+      "text": "Is it worse when you first get moving after rest or in the morning?",
+      "type": "scale_0_5",
+      "priority": 8,
+      "phase": "universal",
+      "question_role": "presence",
+      "maps_to": ["prominent_morning_stiffness", "symptoms_worse_after_rest"],
+      "options": [],
+      "value_mapping": {},
+      "requires": [],
+      "ask_if": [],
+      "blocks_if": [],
+      "helps_discriminate": ["knee_osteoarthritis", "knee_acl_tear"]
+    },
+    {
+      "id": "knee_q_101_twist_pivot",
+      "text": "Did it happen during a twist, pivot, or sudden change of direction?",
+      "type": "boolean",
+      "priority": 10,
+      "phase": "discriminator",
+      "question_role": "refinement",
+      "maps_to": ["twisting_or_pivoting_mechanism"],
+      "options": [
+        { "id": "true", "label": "Yes" },
+        { "id": "false", "label": "No" }
+      ],
+      "value_mapping": {
+        "true": { "twisting_or_pivoting_mechanism": true },
+        "false": { "twisting_or_pivoting_mechanism": false }
+      },
+      "requires": [{ "key": "injury_related_start", "operator": "eq", "value": true }],
+      "ask_if": [{ "key": "injury_related_start", "operator": "eq", "value": true }],
+      "blocks_if": [],
+      "helps_discriminate": ["knee_acl_tear", "knee_meniscal_tear"]
+    },
+    {
+      "id": "knee_q_102_pop",
+      "text": "Did you feel or hear a pop when it started?",
+      "type": "boolean",
+      "priority": 10,
+      "phase": "discriminator",
+      "question_role": "refinement",
+      "maps_to": ["pop_at_injury"],
+      "options": [
+        { "id": "true", "label": "Yes" },
+        { "id": "false", "label": "No" }
+      ],
+      "value_mapping": {
+        "true": { "pop_at_injury": true },
+        "false": { "pop_at_injury": false }
+      },
+      "requires": [{ "key": "injury_related_start", "operator": "eq", "value": true }],
+      "ask_if": [{ "key": "injury_related_start", "operator": "eq", "value": true }],
+      "blocks_if": [],
+      "helps_discriminate": ["knee_acl_tear"]
+    },
+    {
+      "id": "knee_q_103_swelling_timing",
+      "text": "Did the swelling come on quickly within the same day?",
+      "type": "boolean",
+      "priority": 10,
+      "phase": "discriminator",
+      "question_role": "refinement",
+      "maps_to": ["rapid_swelling_within_24h"],
+      "options": [
+        { "id": "true", "label": "Yes" },
+        { "id": "false", "label": "No" }
+      ],
+      "value_mapping": {
+        "true": { "rapid_swelling_within_24h": true },
+        "false": { "rapid_swelling_within_24h": false }
+      },
+      "requires": [{ "key": "knee_swelling", "operator": "gte", "value": 1 }],
+      "ask_if": [{ "key": "knee_swelling", "operator": "gte", "value": 1 }],
+      "blocks_if": [],
+      "helps_discriminate": ["knee_acl_tear", "knee_meniscal_tear"]
+    },
+    {
+      "id": "knee_q_104_continue_activity",
+      "text": "Were you able to continue the activity right after it happened?",
+      "type": "single_select",
+      "priority": 8,
+      "phase": "discriminator",
+      "question_role": "refinement",
+      "maps_to": ["unable_to_continue_activity_immediately"],
+      "options": [
+        { "id": "yes", "label": "Yes, I could continue" },
+        { "id": "no", "label": "No, I had to stop" },
+        { "id": "na", "label": "Not applicable" }
+      ],
+      "value_mapping": {
+        "yes": { "unable_to_continue_activity_immediately": false },
+        "no": { "unable_to_continue_activity_immediately": true },
+        "na": { "unable_to_continue_activity_immediately": null }
+      },
+      "requires": [{ "key": "injury_related_start", "operator": "eq", "value": true }],
+      "ask_if": [{ "key": "injury_related_start", "operator": "eq", "value": true }],
+      "blocks_if": [],
+      "helps_discriminate": ["knee_acl_tear"]
+    },
+    {
+      "id": "knee_q_105_buckling_turning",
+      "text": "Does it buckle especially when turning or changing direction?",
+      "type": "scale_0_5",
+      "priority": 8,
+      "phase": "discriminator",
+      "question_role": "refinement",
+      "maps_to": ["recurrent_buckling_with_turning"],
+      "options": [],
+      "value_mapping": {},
+      "requires": [],
+      "ask_if": [{ "key": "instability_giving_way", "operator": "gte", "value": 1 }],
+      "blocks_if": [],
+      "helps_discriminate": ["knee_acl_tear"]
+    },
+    {
+      "id": "knee_q_106_return_to_sport",
+      "text": "How much has this limited return to sport or trust in the knee during sport-like movement?",
+      "type": "scale_0_5",
+      "priority": 6,
+      "phase": "refinement",
+      "question_role": "refinement",
+      "maps_to": ["difficulty_returning_to_sport", "reduced_trust_in_knee", "reduced_confidence_in_knee"],
+      "options": [],
+      "value_mapping": {},
+      "requires": [],
+      "ask_if": [
+        { "key": "instability_giving_way", "operator": "gte", "value": 2 },
+        { "key": "difficulty_with_pivoting_or_cutting", "operator": "gte", "value": 2 }
+      ],
+      "blocks_if": [],
+      "helps_discriminate": ["knee_acl_tear"]
+    },
+    {
+      "id": "knee_q_107_motion_limit",
+      "text": "How much trouble do you have fully bending or straightening the knee?",
+      "type": "scale_0_5",
+      "priority": 8,
+      "phase": "refinement",
+      "question_role": "refinement",
+      "maps_to": ["loss_of_range_of_motion"],
+      "options": [],
+      "value_mapping": {},
+      "requires": [],
+      "ask_if": [],
+      "blocks_if": [],
+      "helps_discriminate": ["knee_acl_tear", "knee_meniscal_tear"]
+    },
+    {
+      "id": "knee_q_108_joint_line",
+      "text": "Is the pain or tenderness mostly right along the inner or outer joint line?",
+      "type": "scale_0_5",
+      "priority": 8,
+      "phase": "discriminator",
+      "question_role": "refinement",
+      "maps_to": ["joint_line_tenderness"],
+      "options": [],
+      "value_mapping": {},
+      "requires": [],
+      "ask_if": [
+        { "key": "pain_location_medial", "operator": "gte", "value": 1 },
+        { "key": "pain_location_lateral", "operator": "gte", "value": 1 },
+        { "key": "locking", "operator": "gte", "value": 1 },
+        { "key": "catching", "operator": "gte", "value": 1 }
+      ],
+      "blocks_if": [],
+      "helps_discriminate": ["knee_meniscal_tear"]
+    },
+    {
+      "id": "knee_q_109_limp",
+      "text": "How much were you limping right after it started?",
+      "type": "scale_0_5",
+      "priority": 6,
+      "phase": "refinement",
+      "question_role": "refinement",
+      "maps_to": ["limping_after_injury"],
+      "options": [],
+      "value_mapping": {},
+      "requires": [{ "key": "injury_related_start", "operator": "eq", "value": true }],
+      "ask_if": [{ "key": "injury_related_start", "operator": "eq", "value": true }],
+      "blocks_if": [],
+      "helps_discriminate": ["knee_acl_tear", "knee_meniscal_tear"]
+    },
+    {
+      "id": "knee_q_110_activity_limit",
+      "text": "How much has this limited your normal activity?",
+      "type": "scale_0_5",
+      "priority": 7,
+      "phase": "refinement",
+      "question_role": "refinement",
+      "maps_to": ["activity_limitation"],
+      "options": [],
+      "value_mapping": {},
+      "requires": [],
+      "ask_if": [],
+      "blocks_if": [],
+      "helps_discriminate": ["knee_acl_tear", "knee_meniscal_tear", "knee_patellofemoral_pain_syndrome", "knee_osteoarthritis"]
+    },
+    {
+      "id": "knee_q_111_swelling_settled",
+      "text": "Has the swelling mostly settled down now?",
+      "type": "scale_0_5",
+      "priority": 5,
+      "phase": "refinement",
+      "question_role": "refinement",
+      "maps_to": ["swelling_now_reduced"],
+      "options": [],
+      "value_mapping": {},
+      "requires": [{ "key": "knee_swelling", "operator": "gte", "value": 1 }],
+      "ask_if": [{ "key": "knee_swelling", "operator": "gte", "value": 1 }],
+      "blocks_if": [],
+      "helps_discriminate": ["knee_acl_tear", "knee_meniscal_tear"]
+    },
+    {
+      "id": "knee_q_112_crepitus",
+      "text": "Do you feel grinding, crunching, or creaking in the knee?",
+      "type": "scale_0_5",
+      "priority": 8,
+      "phase": "discriminator",
+      "question_role": "refinement",
+      "maps_to": ["crepitus_grinding"],
+      "options": [],
+      "value_mapping": {},
+      "requires": [],
+      "ask_if": [
+        { "key": "gradual_onset_over_months", "operator": "eq", "value": true },
+        { "key": "prominent_morning_stiffness", "operator": "gte", "value": 2 }
+      ],
+      "blocks_if": [],
+      "helps_discriminate": ["knee_osteoarthritis", "knee_patellofemoral_pain_syndrome"]
+    },
+    {
+      "id": "knee_q_501_fever",
+      "text": "Have you had a fever with this knee problem?",
+      "type": "boolean",
+      "priority": 9,
+      "phase": "routing",
+      "question_role": "presence",
+      "maps_to": ["fever"],
+      "options": [
+        { "id": "true", "label": "Yes" },
+        { "id": "false", "label": "No" }
+      ],
+      "value_mapping": {
+        "true": { "fever": true },
+        "false": { "fever": false }
+      },
+      "requires": [],
+      "ask_if": [],
+      "blocks_if": [],
+      "helps_discriminate": ["global_red_flag_logic"]
+    },
+    {
+      "id": "knee_q_502_warmth_redness",
+      "text": "Is the knee hot, red, or unusually warm?",
+      "type": "multi_select",
+      "priority": 9,
+      "phase": "routing",
+      "question_role": "presence",
+      "maps_to": ["joint_warmth", "redness"],
+      "options": [
+        { "id": "warm", "label": "Warm / hot" },
+        { "id": "red", "label": "Red" }
+      ],
+      "value_mapping": {
+        "warm": { "joint_warmth": true },
+        "red": { "redness": true }
+      },
+      "requires": [],
+      "ask_if": [],
+      "blocks_if": [],
+      "helps_discriminate": ["global_red_flag_logic"]
+    },
+    {
+      "id": "knee_q_503_major_trauma",
+      "text": "Did this happen after a major fall, collision, or other significant trauma?",
+      "type": "boolean",
+      "priority": 9,
+      "phase": "routing",
+      "question_role": "presence",
+      "maps_to": ["major_trauma"],
+      "options": [
+        { "id": "true", "label": "Yes" },
+        { "id": "false", "label": "No" }
+      ],
+      "value_mapping": {
+        "true": { "major_trauma": true },
+        "false": { "major_trauma": false }
+      },
+      "requires": [],
+      "ask_if": [],
+      "blocks_if": [],
+      "helps_discriminate": ["global_red_flag_logic"]
+    },
+    {
+      "id": "knee_q_504_deformity",
+      "text": "Did the knee look clearly deformed or out of place?",
+      "type": "boolean",
+      "priority": 9,
+      "phase": "routing",
+      "question_role": "presence",
+      "maps_to": ["deformity"],
+      "options": [
+        { "id": "true", "label": "Yes" },
+        { "id": "false", "label": "No" }
+      ],
+      "value_mapping": {
+        "true": { "deformity": true },
+        "false": { "deformity": false }
+      },
+      "requires": [],
+      "ask_if": [
+        { "key": "major_trauma", "operator": "eq", "value": true },
+        { "key": "difficulty_weight_bearing", "operator": "gte", "value": 4 }
+      ],
+      "blocks_if": [],
+      "helps_discriminate": ["global_red_flag_logic"]
+    }
+  ]
+}

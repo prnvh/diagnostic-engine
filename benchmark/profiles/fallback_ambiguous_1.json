@@ -1,0 +1,1 @@
+{"id":"fallback_ambiguous_1","expectedOutcome":"fallback","initialText":"My knee just feels weird and off sometimes. Hard to explain. Nothing is clearly severe.","groundTruth":{"pain_severity":1,"pain_location_diffuse":2,"activity_limitation":1,"knee_swelling":0,"instability_giving_way":0,"locking":0,"catching":0}}

@@ -1,226 +1,72 @@
 {
   "id": "knee_acl_tear",
-  "name": "Anterior Cruciate Ligament Tear",
+  "name": "Anterior cruciate ligament tear",
   "category": "ligament_injury",
-
   "base_symptoms": [
-    {
-      "key": "instability_giving_way",
-      "weight": 5,
-      "expected_range": [2, 5]
-    },
-    {
-      "key": "difficulty_with_pivoting_or_cutting",
-      "weight": 4,
-      "expected_range": [2, 5]
-    },
-    {
-      "key": "reduced_trust_in_knee",
-      "weight": 4,
-      "expected_range": [2, 5]
-    },
-    {
-      "key": "loss_of_range_of_motion",
-      "weight": 3,
-      "expected_range": [1, 4]
-    },
-    {
-      "key": "discomfort_walking",
-      "weight": 2,
-      "expected_range": [1, 4]
-    }
+    { "key": "instability_giving_way", "weight": 5, "match_type": "range", "expected_range": [2, 5] },
+    { "key": "difficulty_with_pivoting_or_cutting", "weight": 4, "match_type": "range", "expected_range": [2, 5] },
+    { "key": "reduced_trust_in_knee", "weight": 4, "match_type": "range", "expected_range": [2, 5] },
+    { "key": "loss_of_range_of_motion", "weight": 3, "match_type": "range", "expected_range": [1, 4] },
+    { "key": "discomfort_while_walking", "weight": 2, "match_type": "range", "expected_range": [1, 4] },
+    { "key": "joint_line_tenderness", "weight": 2, "match_type": "range", "expected_range": [1, 4] }
   ],
-
   "base_anti_symptoms": [
-    {
-      "key": "front_of_knee_pain_with_prolonged_sitting",
-      "weight": 4,
-      "expected_range": [0, 1]
-    },
-    {
-      "key": "pain_with_stairs_without_instability",
-      "weight": 3,
-      "expected_range": [0, 1]
-    },
-    {
-      "key": "prominent_morning_stiffness",
-      "weight": 4,
-      "expected_range": [0, 1]
-    },
-    {
-      "key": "crepitus_grinding_as_primary_complaint",
-      "weight": 3,
-      "expected_range": [0, 1]
-    },
-    {
-      "key": "posterior_knee_fullness_or_lump",
-      "weight": 3,
-      "expected_range": [0, 1]
-    }
+    { "key": "pain_location_front", "weight": 2, "match_type": "range", "expected_range": [0, 2] },
+    { "key": "pain_after_prolonged_sitting", "weight": 4, "match_type": "range", "expected_range": [0, 1] },
+    { "key": "pain_with_stairs", "weight": 3, "match_type": "range", "expected_range": [0, 2] },
+    { "key": "prominent_morning_stiffness", "weight": 4, "match_type": "range", "expected_range": [0, 1] },
+    { "key": "crepitus_grinding", "weight": 3, "match_type": "range", "expected_range": [0, 1] },
+    { "key": "gradual_onset_over_months", "weight": 4, "match_type": "binary", "expected_value": false }
   ],
-
   "stage_profiles": {
     "acute": {
       "symptoms": [
-        {
-          "key": "twisting_or_pivoting_mechanism",
-          "weight": 5,
-          "expected_value": true
-        },
-        {
-          "key": "noncontact_injury_during_sport",
-          "weight": 3,
-          "expected_value": true
-        },
-        {
-          "key": "pop_at_injury",
-          "weight": 5,
-          "expected_value": true
-        },
-        {
-          "key": "swelling_within_24h",
-          "weight": 5,
-          "expected_value": true
-        },
-        {
-          "key": "pain_severity",
-          "weight": 3,
-          "expected_range": [2, 5]
-        },
-        {
-          "key": "unable_to_continue_activity_immediately",
-          "weight": 4,
-          "expected_value": true
-        }
+        { "key": "twisting_or_pivoting_mechanism", "weight": 5, "match_type": "binary", "expected_value": true },
+        { "key": "pop_at_injury", "weight": 5, "match_type": "binary", "expected_value": true },
+        { "key": "rapid_swelling_within_24h", "weight": 5, "match_type": "binary", "expected_value": true },
+        { "key": "pain_severity", "weight": 3, "match_type": "range", "expected_range": [2, 5] },
+        { "key": "unable_to_continue_activity_immediately", "weight": 4, "match_type": "binary", "expected_value": true },
+        { "key": "limping_after_injury", "weight": 3, "match_type": "range", "expected_range": [2, 5] },
+        { "key": "timeline_lt_1_week", "weight": 3, "match_type": "binary", "expected_value": true }
       ],
       "anti_symptoms": [
-        {
-          "key": "gradual_onset_over_weeks_to_months",
-          "weight": 5,
-          "expected_value": false
-        },
-        {
-          "key": "atraumatic_start",
-          "weight": 4,
-          "expected_value": false
-        }
+        { "key": "gradual_onset_over_weeks", "weight": 5, "match_type": "binary", "expected_value": false, "hard_block_on_confirmed": true },
+        { "key": "atraumatic_start", "weight": 4, "match_type": "binary", "expected_value": false, "hard_block_on_confirmed": true }
       ]
     },
-
     "subacute": {
       "symptoms": [
-        {
-          "key": "instability_giving_way",
-          "weight": 5,
-          "expected_range": [2, 5]
-        },
-        {
-          "key": "recurrent_buckling_with_turning",
-          "weight": 4,
-          "expected_range": [1, 5]
-        },
-        {
-          "key": "activity_limitation",
-          "weight": 3,
-          "expected_range": [2, 5]
-        },
-        {
-          "key": "swelling_now_reduced",
-          "weight": 2,
-          "expected_range": [0, 2]
-        }
+        { "key": "recurrent_buckling_with_turning", "weight": 4, "match_type": "range", "expected_range": [1, 5] },
+        { "key": "activity_limitation", "weight": 3, "match_type": "range", "expected_range": [2, 5] },
+        { "key": "swelling_now_reduced", "weight": 2, "match_type": "range", "expected_range": [2, 5] },
+        { "key": "timeline_1_to_6_weeks", "weight": 2, "match_type": "binary", "expected_value": true }
       ],
       "anti_symptoms": [
-        {
-          "key": "true_locking_or_catching_as_main_issue",
-          "weight": 4,
-          "expected_range": [0, 1]
-        },
-        {
-          "key": "isolated_medial_or_lateral_side_pain_only",
-          "weight": 3,
-          "expected_range": [0, 1]
-        }
+        { "key": "locking", "weight": 4, "match_type": "range", "expected_range": [0, 1] },
+        { "key": "catching", "weight": 3, "match_type": "range", "expected_range": [0, 1] }
       ]
     },
-
     "chronic": {
       "symptoms": [
-        {
-          "key": "recurrent_giving_way",
-          "weight": 5,
-          "expected_range": [2, 5]
-        },
-        {
-          "key": "difficulty_returning_to_cutting_sports",
-          "weight": 4,
-          "expected_range": [2, 5]
-        },
-        {
-          "key": "reduced_confidence_in_knee",
-          "weight": 4,
-          "expected_range": [2, 5]
-        },
-        {
-          "key": "pain_is_not_always_severe",
-          "weight": 1,
-          "expected_range": [0, 3]
-        }
+        { "key": "recurrent_giving_way", "weight": 5, "match_type": "range", "expected_range": [2, 5] },
+        { "key": "difficulty_returning_to_sport", "weight": 4, "match_type": "range", "expected_range": [2, 5] },
+        { "key": "reduced_trust_in_knee", "weight": 4, "match_type": "range", "expected_range": [2, 5] },
+        { "key": "reduced_confidence_in_knee", "weight": 4, "match_type": "range", "expected_range": [2, 5] },
+        { "key": "timeline_6_weeks_to_3_months", "weight": 3, "match_type": "binary", "expected_value": true }
       ],
       "anti_symptoms": [
-        {
-          "key": "symptoms_mainly_morning_stiffness_and_crepitus",
-          "weight": 4,
-          "expected_range": [0, 1]
-        },
-        {
-          "key": "pain_with_prolonged_sitting_as_main_pattern",
-          "weight": 4,
-          "expected_range": [0, 1]
-        }
+        { "key": "symptoms_worse_after_rest", "weight": 4, "match_type": "range", "expected_range": [0, 1] },
+        { "key": "crepitus_grinding", "weight": 3, "match_type": "range", "expected_range": [0, 1] }
       ]
     }
   },
-
   "soft_contradictions": [
-    {
-      "key": "gradual_atraumatic_onset",
-      "penalty": 20
-    },
-    {
-      "key": "no_instability_history",
-      "penalty": 15
-    },
-    {
-      "key": "pain_pattern_fits_patellofemoral_better_than_instability_pattern",
-      "penalty": 15
-    },
-    {
-      "key": "locking_catching_dominates_story",
-      "penalty": 20
-    },
-    {
-      "key": "older_degenerative_stiffness_pattern_without_injury",
-      "penalty": 20
-    }
+    { "key": "gradual_onset_over_weeks", "penalty": 20, "match_type": "binary", "expected_value": true },
+    { "key": "atraumatic_start", "penalty": 20, "match_type": "binary", "expected_value": true },
+    { "key": "locking", "penalty": 15, "match_type": "range", "expected_range": [2, 5] },
+    { "key": "catching", "penalty": 10, "match_type": "range", "expected_range": [2, 5] },
+    { "key": "pain_after_prolonged_sitting", "penalty": 15, "match_type": "range", "expected_range": [3, 5] },
+    { "key": "prominent_morning_stiffness", "penalty": 20, "match_type": "range", "expected_range": [3, 5] }
   ],
-
-  "hard_contradictions": [
-    {
-      "key": "primary_problem_not_in_knee",
-      "penalty": 100
-    },
-    {
-      "key": "fever_hot_swollen_joint_possible_infection",
-      "penalty": 100
-    },
-    {
-      "key": "clear_patellar_dislocation_event",
-      "penalty": 100
-    },
-    {
-      "key": "suspected_fracture_pattern",
-      "penalty": 100
-    }
-  ]
+  "hard_contradictions": []
 }

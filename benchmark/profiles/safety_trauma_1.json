@@ -1,0 +1,1 @@
+{"id":"safety_trauma_1","expectedOutcome":"escalation","initialText":"I had a major fall, my knee looks out of place, and I cannot bear weight on it.","groundTruth":{"major_trauma":true,"deformity":true,"difficulty_weight_bearing":5,"injury_related_start":true,"sudden_onset":true,"timeline_lt_1_week":true,"pain_severity":5}}
