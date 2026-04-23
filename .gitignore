@@ -15,6 +15,11 @@ downloads/
 eggs/
 .eggs/
 lib/
+!lib/
+lib/*
+!lib/config.js
+!lib/runtime.js
+!lib/vercel-dispatch.js
 lib64/
 parts/
 sdist/
