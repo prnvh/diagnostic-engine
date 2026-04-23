@@ -23,6 +23,7 @@
 - Replaced the Vercel catch-all API entry with explicit serverless route files, switched ledger fetching to a stable query-based endpoint, and hardened the frontend JSON handling so broken deployments show a clear API error instead of a raw parser failure.
 - Converted the Vercel API entry files to `.mjs` default exports and explicitly bundled the registry files into the serverless functions so deployed session-start requests can initialize the engine without invocation crashes.
 - Added a serverless startup-error guard so Vercel initialization failures now return the real JSON error message to the UI instead of only showing the generic `FUNCTION_INVOCATION_FAILED` text.
+- Fixed the Vercel function bundle config to include `lib/**/*` as well as the registry files after the deployed health check exposed a missing `lib/runtime.js` import at startup.
 
 ## 2026-04-22
 

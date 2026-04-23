@@ -2,11 +2,17 @@
   "functions": {
     "api/*.mjs": {
       "maxDuration": 10,
-      "includeFiles": "registry/**/*"
+      "includeFiles": [
+        "lib/**/*",
+        "registry/**/*"
+      ]
     },
     "api/**/*.mjs": {
       "maxDuration": 10,
-      "includeFiles": "registry/**/*"
+      "includeFiles": [
+        "lib/**/*",
+        "registry/**/*"
+      ]
     }
   },
   "rewrites": [
