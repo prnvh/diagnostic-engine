@@ -24,6 +24,7 @@
 - Converted the Vercel API entry files to `.mjs` default exports and explicitly bundled the registry files into the serverless functions so deployed session-start requests can initialize the engine without invocation crashes.
 - Added a serverless startup-error guard so Vercel initialization failures now return the real JSON error message to the UI instead of only showing the generic `FUNCTION_INVOCATION_FAILED` text.
 - Fixed the Vercel function bundle config to include `lib/**/*` as well as the registry files after the deployed health check exposed a missing `lib/runtime.js` import at startup.
+- Corrected the `vercel.json` function config to use a single `includeFiles` glob string and widened that bundle glob to cover the full runtime source chain used by the serverless entrypoints.
 
 ## 2026-04-22
 
