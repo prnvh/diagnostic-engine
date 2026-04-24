@@ -88,9 +88,20 @@
           </div>
 
           <div class="workflow-shell">
-            <aside class="workflow-rail surface">
-              <div class="rail-group">
-                <p class="mini-label">Progression</p>
+            <section class="workflow-stage-deck surface">
+              <div class="workflow-deck-head">
+                <div>
+                  <p class="mini-label">Interactive flow</p>
+                  <h3>Give the intake and form flow their own working space</h3>
+                </div>
+
+                <div class="deck-actions">
+                  <button class="ghost-button" id="load-ledger" type="button" disabled>Refresh ledger</button>
+                  <button class="ghost-button" id="reset-demo" type="button">Reset</button>
+                </div>
+              </div>
+
+              <div class="workflow-deck-topline">
                 <div class="stage-list" id="stage-list">
                   <article class="stage-chip" data-stage-marker="intake">
                     <span class="stage-chip-index">01</span>
@@ -116,20 +127,6 @@
                     </div>
                   </article>
                 </div>
-              </div>
-
-              <div class="rail-group">
-                <div class="panel-head rail-head">
-                  <div>
-                    <p class="mini-label">Session rail</p>
-                    <h3>Live state</h3>
-                  </div>
-
-                  <div class="rail-actions">
-                    <button class="ghost-button" id="load-ledger" type="button" disabled>Refresh ledger</button>
-                    <button class="ghost-button" id="reset-demo" type="button">Reset</button>
-                  </div>
-                </div>
 
                 <div class="rail-metrics" id="session-meta">
                   <article class="rail-metric">
@@ -154,7 +151,103 @@
                 </div>
               </div>
 
-              <div class="rail-group rail-card">
+              <div class="status-banner" id="status-banner" hidden></div>
+
+              <div class="workflow-main">
+                <section class="workflow-card intake-stage surface" id="intake-stage">
+                  <div class="panel-head stage-head">
+                    <div>
+                      <p class="mini-label">Story intake</p>
+                      <h3>Describe what happened in your own words</h3>
+                    </div>
+                  </div>
+
+                  <p class="stage-copy">
+                    Start with free text. The engine will first parse that story into symptom-registry evidence, then it
+                    will transition into a short form flow that asks only one question at a time.
+                  </p>
+
+                  <form id="start-form" class="intake-form">
+                    <input id="patient-id" name="patientId" type="hidden" />
+
+                    <label class="field">
+                      <span>Opening complaint</span>
+                      <textarea
+                        class="knee-textarea"
+                        id="complaint-text"
+                        name="text"
+                        rows="7"
+                        placeholder="Example: I twisted my knee playing football, felt a pop, it swelled that evening, and now it gives way."
+                        required
+                      ></textarea>
+                    </label>
+
+                    <div class="sample-row">
+                      <button class="sample-button" type="button" data-sample="acl">Twist and pop</button>
+                      <button class="sample-button" type="button" data-sample="meniscus">Catch and turn</button>
+                      <button class="sample-button" type="button" data-sample="pfps">Front pain</button>
+                      <button class="sample-button" type="button" data-sample="oa">Months of ache</button>
+                      <button class="sample-button" type="button" data-sample="redflag">Hot red knee</button>
+                      <button class="sample-button" type="button" data-sample="trauma">Major fall</button>
+                    </div>
+
+                    <div class="intake-actions">
+                      <div class="workspace-note">
+                        Knee-only scope for this build. The result is a fit score, fallback, or escalation, not a medical
+                        diagnosis.
+                      </div>
+
+                      <button class="button primary" id="start-button" type="submit">Begin guided form</button>
+                    </div>
+                  </form>
+                </section>
+
+                <section class="workflow-card interview-stage surface" id="interview-stage" hidden>
+                  <div class="panel-head stage-head">
+                    <div>
+                      <p class="mini-label">Guided form</p>
+                      <h3>One focused question at a time</h3>
+                    </div>
+
+                    <div class="question-progress" id="question-progress">Waiting for the first form prompt.</div>
+                  </div>
+
+                  <div class="interview-layout">
+                    <div class="interview-context">
+                      <article class="context-card">
+                        <span class="note-label">Form context</span>
+                        <p class="question-message" id="question-message">
+                          The opening story has been mapped. The next question will confirm the highest-value detail.
+                        </p>
+                      </article>
+
+                      <article class="context-card" id="question-note-card" hidden>
+                        <span class="note-label">Clarification note</span>
+                        <p class="question-note" id="question-note"></p>
+                      </article>
+                    </div>
+
+                    <form id="question-form" class="question-stage-form"></form>
+                  </div>
+                </section>
+
+                <section class="workflow-card result-stage surface" id="result-stage" hidden>
+                  <div class="panel-head stage-head">
+                    <div>
+                      <p class="mini-label">Outcome</p>
+                      <h3>Session outcome</h3>
+                    </div>
+
+                    <span class="result-chip" id="result-chip">Waiting</span>
+                  </div>
+
+                  <div id="result-body" class="result-body empty-state">No result yet.</div>
+                </section>
+              </div>
+            </section>
+
+            <div class="workflow-support-grid">
+              <section class="support-card support-card-wide surface">
                 <div class="rail-card-head">
                   <div>
                     <p class="mini-label">Registry intake</p>
@@ -170,9 +263,9 @@
 
                 <p class="parser-warning" id="intake-warning" hidden></p>
                 <div class="signal-cloud empty-state" id="intake-signals">No mapped signals yet.</div>
-              </div>
+              </section>
 
-              <article class="rail-group shortlist-preview-card" id="candidate-preview-card" hidden>
+              <article class="support-card shortlist-preview-card surface" id="candidate-preview-card" hidden>
                 <div class="rail-card-head">
                   <div>
                     <p class="mini-label">Shortlist ready</p>
@@ -185,100 +278,6 @@
                 </p>
                 <button class="button primary wide" id="reopen-shortlist" type="button">Open structured shortlist</button>
               </article>
-
-              <div class="status-banner" id="status-banner" hidden></div>
-            </aside>
-
-            <div class="workflow-main">
-              <section class="workflow-card intake-stage surface" id="intake-stage">
-                <div class="panel-head stage-head">
-                  <div>
-                    <p class="mini-label">Story intake</p>
-                    <h3>Describe what happened in your own words</h3>
-                  </div>
-                </div>
-
-                <p class="stage-copy">
-                  Start with free text. The engine will first parse that story into symptom-registry evidence, then it
-                  will transition into a short form flow that asks only one question at a time.
-                </p>
-
-                <form id="start-form" class="intake-form">
-                  <input id="patient-id" name="patientId" type="hidden" />
-
-                  <label class="field">
-                    <span>Opening complaint</span>
-                    <textarea
-                      class="knee-textarea"
-                      id="complaint-text"
-                      name="text"
-                      rows="7"
-                      placeholder="Example: I twisted my knee playing football, felt a pop, it swelled that evening, and now it gives way."
-                      required
-                    ></textarea>
-                  </label>
-
-                  <div class="sample-row">
-                    <button class="sample-button" type="button" data-sample="acl">Twist and pop</button>
-                    <button class="sample-button" type="button" data-sample="meniscus">Catch and turn</button>
-                    <button class="sample-button" type="button" data-sample="pfps">Front pain</button>
-                    <button class="sample-button" type="button" data-sample="oa">Months of ache</button>
-                    <button class="sample-button" type="button" data-sample="redflag">Hot red knee</button>
-                    <button class="sample-button" type="button" data-sample="trauma">Major fall</button>
-                  </div>
-
-                  <div class="intake-actions">
-                    <div class="workspace-note">
-                      Knee-only scope for this build. The result is a fit score, fallback, or escalation, not a medical
-                      diagnosis.
-                    </div>
-
-                    <button class="button primary" id="start-button" type="submit">Begin guided form</button>
-                  </div>
-                </form>
-              </section>
-
-              <section class="workflow-card interview-stage surface" id="interview-stage" hidden>
-                <div class="panel-head stage-head">
-                  <div>
-                    <p class="mini-label">Guided form</p>
-                    <h3>One focused question at a time</h3>
-                  </div>
-
-                  <div class="question-progress" id="question-progress">Waiting for the first form prompt.</div>
-                </div>
-
-                <div class="interview-layout">
-                  <div class="interview-context">
-                    <article class="context-card">
-                      <span class="note-label">Form context</span>
-                      <p class="question-message" id="question-message">
-                        The opening story has been mapped. The next question will confirm the highest-value detail.
-                      </p>
-                    </article>
-
-                    <article class="context-card" id="question-note-card" hidden>
-                      <span class="note-label">Clarification note</span>
-                      <p class="question-note" id="question-note"></p>
-                    </article>
-                  </div>
-
-                  <form id="question-form" class="question-stage-form"></form>
-                </div>
-              </section>
-
-              <section class="workflow-card result-stage surface" id="result-stage" hidden>
-                <div class="panel-head stage-head">
-                  <div>
-                    <p class="mini-label">Outcome</p>
-                    <h3>Session outcome</h3>
-                  </div>
-
-                  <span class="result-chip" id="result-chip">Waiting</span>
-                </div>
-
-                <div id="result-body" class="result-body empty-state">No result yet.</div>
-              </section>
             </div>
           </div>
 
