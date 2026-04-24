@@ -49,6 +49,10 @@ body {
   line-height: 1.72;
 }
 
+body.page-scale-80 {
+  zoom: 0.8;
+}
+
 body.modal-open {
   overflow: hidden;
 }
