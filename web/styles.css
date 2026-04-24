@@ -39,6 +39,7 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
+  zoom: 0.8;
   background:
     radial-gradient(circle at top left, rgba(139, 98, 66, 0.08), transparent 24%),
     radial-gradient(circle at 82% 12%, rgba(37, 69, 61, 0.08), transparent 20%),

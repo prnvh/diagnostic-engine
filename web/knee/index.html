@@ -29,7 +29,6 @@
         <nav class="topnav" aria-label="Primary">
           <a href="/">Overview</a>
           <a href="#workspace">Workspace</a>
-          <a href="#coverage">Coverage</a>
         </nav>
 
         <div class="scope-badge">Knee-only beta</div>
@@ -39,52 +38,20 @@
         <section class="domain-hero surface">
           <div class="domain-hero-grid">
             <div class="domain-hero-copy">
-              <p class="eyebrow">Knee domain page</p>
-              <h1>The knee workspace for sessions, questions, and results.</h1>
+              <p class="eyebrow">Knee workspace</p>
+              <h1>Knee intake and scoring</h1>
             </div>
-
-            <div class="domain-hero-side">
-              <p class="hero-text">
-                Start with a complaint, answer the next questions, and inspect the shortlist or safety path alongside the
-                session ledger.
-              </p>
-
-              <div class="hero-actions">
-                <a class="button primary" href="#workspace">Open the workspace</a>
-                <a class="button secondary" href="/">Back to overview</a>
-              </div>
+            <div class="hero-actions">
+              <a class="button primary" href="#workspace">Open workspace</a>
+              <a class="button secondary" href="/">Back</a>
             </div>
-          </div>
-
-          <div class="hero-facts">
-            <article class="fact-item">
-              <span class="fact-label">Live engine</span>
-              <strong>Structured session state</strong>
-              <p>Questions, shortlist, and result stay in view while the session updates.</p>
-            </article>
-
-            <article class="fact-item">
-              <span class="fact-label">Governance</span>
-              <strong>Append-only ledger</strong>
-              <p>Every material step can be reloaded and inspected from the same page.</p>
-            </article>
-
-            <article class="fact-item">
-              <span class="fact-label">Scope</span>
-              <strong>Knee-only reasoning</strong>
-              <p>Current modeled nodes are ACL tear, meniscal tear, PFPS, and knee osteoarthritis.</p>
-            </article>
           </div>
         </section>
 
         <section class="workflow-section" id="workspace">
           <div class="section-heading workflow-heading">
             <p class="eyebrow">Guided workspace</p>
-            <h2>Start with the story. The engine then narrows into one form question at a time.</h2>
-            <p class="section-note">
-              The opening complaint is parsed into registry signals first. After that, the session moves into a short,
-              focused form flow before the shortlist is shown.
-            </p>
+            <h2>Start intake and continue with symptom scoring prompts.</h2>
           </div>
 
           <div class="workflow-shell">
@@ -95,10 +62,7 @@
                   <h3>Give the intake and form flow their own working space</h3>
                 </div>
 
-                <div class="deck-actions">
-                  <button class="ghost-button" id="load-ledger" type="button" disabled>Refresh ledger</button>
-                  <button class="ghost-button" id="reset-demo" type="button">Reset</button>
-                </div>
+                <div class="deck-actions"><button class="ghost-button" id="reset-demo" type="button">Reset</button></div>
               </div>
 
               <div class="workflow-deck-topline">
@@ -149,6 +113,9 @@
                     <strong id="meta-round">0</strong>
                   </article>
                 </div>
+                <div class="deck-actions">
+                  <a class="ghost-button" id="open-ledger-page" href="/knee/ledger/" target="_blank" rel="noopener">View ledger</a>
+                </div>
               </div>
 
               <div class="status-banner" id="status-banner" hidden></div>
@@ -161,11 +128,6 @@
                       <h3>Describe what happened in your own words</h3>
                     </div>
                   </div>
-
-                  <p class="stage-copy">
-                    Start with free text. The engine will first parse that story into symptom-registry evidence, then it
-                    will transition into a short form flow that asks only one question at a time.
-                  </p>
 
                   <form id="start-form" class="intake-form">
                     <input id="patient-id" name="patientId" type="hidden" />
@@ -191,14 +153,7 @@
                       <button class="sample-button" type="button" data-sample="trauma">Major fall</button>
                     </div>
 
-                    <div class="intake-actions">
-                      <div class="workspace-note">
-                        Knee-only scope for this build. The result is a fit score, fallback, or escalation, not a medical
-                        diagnosis.
-                      </div>
-
-                      <button class="button primary" id="start-button" type="submit">Begin guided form</button>
-                    </div>
+                    <div class="intake-actions"><button class="button primary" id="start-button" type="submit">Start</button></div>
                   </form>
                 </section>
 
@@ -214,12 +169,7 @@
 
                   <div class="interview-layout">
                     <div class="interview-context">
-                      <article class="context-card">
-                        <span class="note-label">Form context</span>
-                        <p class="question-message" id="question-message">
-                          The opening story has been mapped. The next question will confirm the highest-value detail.
-                        </p>
-                      </article>
+                      <article class="context-card"><p class="question-message" id="question-message">Waiting for first prompt.</p></article>
 
                       <article class="context-card" id="question-note-card" hidden>
                         <span class="note-label">Clarification note</span>
@@ -295,93 +245,12 @@
               </div>
             </section>
 
-            <section class="review-card review-card-wide surface">
-              <div class="panel-head">
-                <div>
-                  <p class="mini-label">Governance</p>
-                  <h3>Ledger</h3>
-                </div>
-              </div>
-
-              <div id="ledger-output" class="ledger-list empty-state">Ledger not loaded.</div>
-            </section>
-          </div>
-        </section>
-
-        <section class="coverage-section" id="coverage">
-          <div class="section-heading coverage-heading">
-            <p class="eyebrow">Current scope</p>
-            <h2>The current registry covers four knee conditions plus a safety escalation layer.</h2>
-            <p class="section-note">
-              The page is tuned for a focused knee intake flow: free-text opening story, one-question form rounds, and a
-              structured shortlist only after enough evidence has been earned.
-            </p>
-          </div>
-
-          <div class="coverage-band-grid">
-            <article class="coverage-band-card surface">
-              <p class="note-label">Modeled nodes</p>
-              <h3>What the engine reasons about today</h3>
-
-              <div class="coverage-list">
-                <article class="coverage-item">
-                  <strong>ACL tear</strong>
-                  <p>Pivot injury, pop, rapid swelling, instability, and trust loss in sport-like movement.</p>
-                </article>
-
-                <article class="coverage-item">
-                  <strong>Meniscal tear</strong>
-                  <p>Inner or outer joint-line pain, catching or locking, twisting history, and range-of-motion loss.</p>
-                </article>
-
-                <article class="coverage-item">
-                  <strong>Patellofemoral pain syndrome</strong>
-                  <p>Front-of-knee pain, stairs, squatting, sitting with the knee bent, and activity-related pain.</p>
-                </article>
-
-                <article class="coverage-item">
-                  <strong>Knee osteoarthritis</strong>
-                  <p>Longer timeline, stiffness after rest, crepitus, walking discomfort, and load-related symptoms.</p>
-                </article>
-              </div>
-            </article>
-
-            <article class="coverage-band-card surface">
-              <p class="note-label">Interpretation</p>
-              <h3>How to read the outcome</h3>
-
-              <div class="coverage-list">
-                <article class="coverage-item">
-                  <strong>Fit score, not diagnosis</strong>
-                  <p>The shortlist ranks the best registry fits from the evidence gathered so far.</p>
-                </article>
-
-                <article class="coverage-item">
-                  <strong>Fallback means bounded confidence</strong>
-                  <p>If confidence is not earned, the engine stops rather than pretending certainty it does not have.</p>
-                </article>
-
-                <article class="coverage-item">
-                  <strong>Safety overrides ranking</strong>
-                  <p>Hot red knee, fever, major trauma, deformity, and similar patterns trigger the safety path first.</p>
-                </article>
-
-                <article class="coverage-item">
-                  <strong>Ledger stays inspectable</strong>
-                  <p>Every major session event can be refreshed and reviewed from the same page.</p>
-                </article>
-              </div>
-            </article>
           </div>
         </section>
       </main>
 
       <footer class="site-footer surface">
         <strong>Diagnostic Engine</strong>
-        <p>
-          The dedicated knee workspace for structured triage, targeted follow-up, and inspectable session state. It is not
-          a diagnosis and should not replace urgent medical care.
-        </p>
       </footer>
     </div>
 

@@ -34,8 +34,6 @@ const elements = {
   intakeSummary: document.getElementById("intake-summary"),
   intakeWarning: document.getElementById("intake-warning"),
   interviewStage: document.getElementById("interview-stage"),
-  ledgerButton: document.getElementById("load-ledger"),
-  ledgerOutput: document.getElementById("ledger-output"),
   metaAnswered: document.getElementById("meta-answered"),
   metaRound: document.getElementById("meta-round"),
   metaSessionId: document.getElementById("meta-session-id"),
@@ -46,6 +44,7 @@ const elements = {
   questionNote: document.getElementById("question-note"),
   questionNoteCard: document.getElementById("question-note-card"),
   questionProgress: document.getElementById("question-progress"),
+  openLedgerPage: document.getElementById("open-ledger-page"),
   reopenShortlist: document.getElementById("reopen-shortlist"),
   resetButton: document.getElementById("reset-demo"),
   resultBody: document.getElementById("result-body"),
@@ -154,7 +153,6 @@ function setBusy(isBusy) {
     control.disabled = isBusy;
   });
 
-  elements.ledgerButton.disabled = isBusy || !state.sessionId;
   elements.resetButton.disabled = isBusy;
   elements.reopenShortlist.disabled = isBusy || !state.latestCandidateResult;
 }
@@ -210,7 +208,19 @@ function renderMeta(session) {
   const minimum = session?.minimumQuestionRoundsBeforeCandidates ?? 3;
   elements.metaAnswered.textContent = `${answered} of ${minimum}`;
 
-  elements.ledgerButton.disabled = !state.sessionId;
+  if (elements.openLedgerPage) {
+    if (state.sessionId) {
+      elements.openLedgerPage.href = `/knee/ledger/?sessionId=${encodeURIComponent(state.sessionId)}`;
+      elements.openLedgerPage.removeAttribute("aria-disabled");
+      elements.openLedgerPage.style.pointerEvents = "auto";
+      elements.openLedgerPage.style.opacity = "1";
+    } else {
+      elements.openLedgerPage.href = "/knee/ledger/";
+      elements.openLedgerPage.setAttribute("aria-disabled", "true");
+      elements.openLedgerPage.style.pointerEvents = "none";
+      elements.openLedgerPage.style.opacity = "0.58";
+    }
+  }
 }
 
 function renderParserOutput(parserOutput) {
@@ -243,13 +253,38 @@ function renderParserOutput(parserOutput) {
   }
 }
 
+function formatSymptomKey(symptomId) {
+  return String(symptomId || "")
+    .split("_")
+    .filter(Boolean)
+    .map((chunk) => chunk.charAt(0).toUpperCase() + chunk.slice(1))
+    .join(" ");
+}
+
+function buildSymptomPrompt(question) {
+  const mappedSymptoms = Array.isArray(question?.mapsTo) ? question.mapsTo : [];
+  const primary = mappedSymptoms[0] || question?.id || "symptom";
+
+  if (question.type === "scale_0_5") {
+    return `Score ${formatSymptomKey(primary)} (0-5)`;
+  }
+  if (question.type === "multi_select") {
+    return `Select present signals for ${formatSymptomKey(primary)}`;
+  }
+  if (question.type === "boolean") {
+    return `Set ${formatSymptomKey(primary)} (true/false)`;
+  }
+  return `Set value for ${formatSymptomKey(primary)}`;
+}
+
 function renderQuestionChoices(question) {
   if (question.type === "scale_0_5") {
     const scaleLabels = Array.isArray(question.scaleLabels) ? question.scaleLabels : [];
     return `
       <div class="scale-choice-grid">
-        ${Array.from({ length: 6 }, (_, value) => {
-          const label = scaleLabels[value] || "";
+        ${Array.from({ length: 5 }, (_, index) => {
+          const value = index + 1;
+          const label = scaleLabels[index] || "";
           return `
             <label class="choice-chip scale-chip">
               <input type="radio" name="${escapeHtml(question.id)}" value="${value}" required />
@@ -297,8 +332,7 @@ function buildSubmitLabel(session) {
 function renderQuestionForm(form, session) {
   state.currentForm = form || null;
   state.currentQuestion = form?.questions?.[0] || null;
-  elements.questionMessage.textContent =
-    form?.message || "The opening story has been mapped. The next question will confirm the highest-value detail.";
+  elements.questionMessage.textContent = "Answer the active symptom prompt.";
 
   if (!state.currentQuestion) {
     elements.questionProgress.textContent = "Waiting for the first form prompt.";
@@ -325,8 +359,8 @@ function renderQuestionForm(form, session) {
     <section class="question-panel">
       <div class="question-panel-head">
         <span class="question-phase-pill">${escapeHtml(formatTitleCase(state.currentQuestion.phase || "form"))}</span>
-        <h4 class="question-title">${escapeHtml(state.currentQuestion.text)}</h4>
-        <p class="question-caption">Pick the clearest answer. Each response determines the next single question.</p>
+        <h4 class="question-title">${escapeHtml(buildSymptomPrompt(state.currentQuestion))}</h4>
+        <p class="question-caption">Original: ${escapeHtml(state.currentQuestion.text)}</p>
       </div>
 
       ${renderQuestionChoices(state.currentQuestion)}
@@ -582,81 +616,6 @@ function isMissingQuestionResponse(question, response) {
   return response === "" || response == null;
 }
 
-function formatLedgerType(type) {
-  return String(type || "")
-    .toLowerCase()
-    .split("_")
-    .map((chunk) => chunk.charAt(0).toUpperCase() + chunk.slice(1))
-    .join(" ");
-}
-
-function summarizeLedgerEntry(entry) {
-  switch (entry.type) {
-    case "SESSION_CREATED":
-      return "Started a new session and initialized the interview state.";
-    case "SESSION_REUSED":
-      return "Reused an in-progress session within the debounce window.";
-    case "PARSE_MERGED":
-      return `Mapped ${entry.payload?.parsedKeys?.length || 0} registry signals from the opening story using ${entry.payload?.mode || "the intake parser"}.`;
-    case "ROUND_COMPLETE":
-      return "Scored the live shortlist and updated the current round.";
-    case "ANSWERS_RECORDED":
-      return `Merged ${entry.payload?.keys?.length || 0} explicit answer updates into the session state.`;
-    case "CANDIDATE_FLAGGED":
-      return "A confident shortlist band was reached and the candidate popup became available.";
-    case "FALLBACK_TRIGGERED":
-      return "The engine stopped with a bounded fallback instead of pretending confidence it did not have.";
-    case "SAFETY_ESCALATED":
-      return "Safety logic interrupted the ranking loop and escalated the result.";
-    default:
-      return "Recorded a session event.";
-  }
-}
-
-function formatTimestamp(value) {
-  if (!value) {
-    return "";
-  }
-
-  try {
-    return new Date(value).toLocaleString([], {
-      dateStyle: "medium",
-      timeStyle: "short"
-    });
-  } catch (error) {
-    return value;
-  }
-}
-
-function renderLedger(entries = []) {
-  if (!entries.length) {
-    elements.ledgerOutput.className = "ledger-list empty-state";
-    elements.ledgerOutput.textContent = "Ledger not loaded.";
-    return;
-  }
-
-  elements.ledgerOutput.className = "ledger-list";
-  elements.ledgerOutput.innerHTML = entries
-    .map(
-      (entry) => `
-        <article class="ledger-entry">
-          <div class="ledger-head">
-            <div>
-              <strong>${escapeHtml(formatLedgerType(entry.type))}</strong>
-              <p>${escapeHtml(summarizeLedgerEntry(entry))}</p>
-            </div>
-            <span class="micro-label">${escapeHtml(formatTimestamp(entry.at))}</span>
-          </div>
-          <details>
-            <summary>Inspect payload</summary>
-            <pre class="ledger-payload">${escapeHtml(JSON.stringify(entry.payload || {}, null, 2))}</pre>
-          </details>
-        </article>
-      `
-    )
-    .join("");
-}
-
 async function handleEngineResponse(payload, { scroll = false } = {}) {
   const session = payload.session || null;
   const form = payload.form || session?.latestForm || null;
@@ -674,10 +633,6 @@ async function handleEngineResponse(payload, { scroll = false } = {}) {
     setStage("forms");
   } else {
     setStage("intake");
-  }
-
-  if (state.sessionId) {
-    void loadLedger({ quiet: true });
   }
 
   if (scroll) {
@@ -722,8 +677,7 @@ async function submitSessionStart({ patientId, text, scroll = true } = {}) {
   }
 
   setBusy(true);
-  showStatus("Parsing the opening story and starting the guided form...", "neutral");
-  renderLedger([]);
+  showStatus("Parsing intake and starting form...", "neutral");
 
   try {
     const payload = await requestJson("/api/session/start", {
@@ -788,34 +742,6 @@ async function answerQuestion(event) {
   }
 }
 
-async function loadLedger({ quiet = false } = {}) {
-  if (!state.sessionId) {
-    return;
-  }
-
-  if (!quiet) {
-    setBusy(true);
-    showStatus("Refreshing ledger...", "neutral");
-  }
-
-  try {
-    const payload = await requestJson(`/api/session/ledger?sessionId=${encodeURIComponent(state.sessionId)}`);
-    renderLedger(payload.ledger || []);
-
-    if (!quiet) {
-      showStatus("Ledger refreshed.", "success");
-    }
-  } catch (error) {
-    if (!quiet) {
-      showStatus(error.message, "danger");
-    }
-  } finally {
-    if (!quiet) {
-      setBusy(false);
-    }
-  }
-}
-
 function resetDemo() {
   state.currentForm = null;
   state.currentQuestion = null;
@@ -826,7 +752,7 @@ function resetDemo() {
   elements.startForm.reset();
   elements.patientId.value = createPatientId();
   elements.questionMessage.textContent =
-    "The opening story has been mapped. The next question will confirm the highest-value detail.";
+    "Waiting for first prompt.";
   elements.questionNoteCard.hidden = true;
   elements.questionNote.textContent = "";
   elements.questionProgress.textContent = "Waiting for the first form prompt.";
@@ -838,7 +764,6 @@ function resetDemo() {
   renderCandidatePreview(null, null);
   renderCandidateState(null);
   clearCandidateModal();
-  renderLedger([]);
   renderMeta(null);
   renderParserOutput(null);
   showStatus("", "neutral");
@@ -911,9 +836,6 @@ function init() {
   resetDemo();
   elements.startForm.addEventListener("submit", startSession);
   elements.questionForm.addEventListener("submit", answerQuestion);
-  elements.ledgerButton.addEventListener("click", () => {
-    void loadLedger();
-  });
   elements.resetButton.addEventListener("click", resetDemo);
   elements.reopenShortlist.addEventListener("click", openCandidateModal);
   elements.resultBody.addEventListener("click", (event) => {
