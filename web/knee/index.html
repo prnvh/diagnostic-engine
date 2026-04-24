@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="page-scale-80">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -78,91 +78,87 @@
 
         <section class="workflow-section" id="workspace">
           <div class="workflow-shell surface">
-            <section class="workflow-toolbar surface">
-              <div class="workflow-toolbar-head">
-                <h2 class="workflow-shell-title">Intake first, then one focused question at a time</h2>
+            <div class="workflow-shell-head">
+              <h2 class="workflow-shell-title">Intake first, then one focused question at a time</h2>
 
-                <div class="workflow-toolbar-actions">
-                  <a class="ghost-button" id="open-ledger-page" href="/knee/ledger/" target="_blank" rel="noopener">View ledger</a>
-                  <button class="ghost-button" id="reset-demo" type="button">Reset</button>
+              <div class="workflow-toolbar-actions">
+                <a class="ghost-button" id="open-ledger-page" href="/knee/ledger/" target="_blank" rel="noopener">View ledger</a>
+                <button class="ghost-button" id="reset-demo" type="button">Reset</button>
+              </div>
+            </div>
+
+            <div class="rail-metrics" id="session-meta">
+              <article class="rail-metric rail-metric-session">
+                <span class="rail-label">Session</span>
+                <div class="rail-metric-value-row">
+                  <strong id="meta-session-id" title="Not started">Not started</strong>
+                  <button class="metric-copy-button" id="copy-session-id" type="button" hidden>Copy</button>
                 </div>
-              </div>
+              </article>
 
-              <div class="rail-metrics" id="session-meta">
-                <article class="rail-metric rail-metric-session">
-                  <span class="rail-label">Session</span>
-                  <div class="rail-metric-value-row">
-                    <strong id="meta-session-id" title="Not started">Not started</strong>
-                    <button class="metric-copy-button" id="copy-session-id" type="button" hidden>Copy</button>
-                  </div>
-                </article>
+              <article class="rail-metric">
+                <span class="rail-label">Status</span>
+                <strong id="meta-status">Idle</strong>
+              </article>
 
-                <article class="rail-metric">
-                  <span class="rail-label">Status</span>
-                  <strong id="meta-status">Idle</strong>
-                </article>
+              <article class="rail-metric">
+                <span class="rail-label">Answered</span>
+                <strong id="meta-answered">0 of 3</strong>
+              </article>
 
-                <article class="rail-metric">
-                  <span class="rail-label">Answered</span>
-                  <strong id="meta-answered">0 of 3</strong>
-                </article>
-
-                <article class="rail-metric">
-                  <span class="rail-label">Engine round</span>
-                  <strong id="meta-round">0</strong>
-                </article>
-              </div>
-            </section>
+              <article class="rail-metric">
+                <span class="rail-label">Engine round</span>
+                <strong id="meta-round">0</strong>
+              </article>
+            </div>
 
             <div class="status-banner" id="status-banner" hidden></div>
 
-            <div class="workflow-main">
-              <section class="workflow-card intake-stage surface" id="intake-stage">
-                <form id="start-form" class="intake-form">
-                  <input id="patient-id" name="patientId" type="hidden" />
+            <section class="workflow-card intake-stage surface" id="intake-stage">
+              <form id="start-form" class="intake-form">
+                <input id="patient-id" name="patientId" type="hidden" />
 
-                  <label class="field">
-                    <span>Opening complaint</span>
-                    <textarea
-                      class="knee-textarea"
-                      id="complaint-text"
-                      name="text"
-                      rows="7"
-                      placeholder="Example: I twisted my knee playing football, felt a pop, it swelled that evening, and now it gives way."
-                      required
-                    ></textarea>
-                  </label>
+                <label class="field">
+                  <span>Opening complaint</span>
+                  <textarea
+                    class="knee-textarea"
+                    id="complaint-text"
+                    name="text"
+                    rows="7"
+                    placeholder="Example: I twisted my knee playing football, felt a pop, it swelled that evening, and now it gives way."
+                    required
+                  ></textarea>
+                </label>
 
-                  <div class="sample-row">
-                    <button class="sample-button" type="button" data-sample="acl">Twist and pop</button>
-                    <button class="sample-button" type="button" data-sample="meniscus">Catch and turn</button>
-                    <button class="sample-button" type="button" data-sample="pfps">Front pain</button>
-                    <button class="sample-button" type="button" data-sample="oa">Months of ache</button>
-                    <button class="sample-button" type="button" data-sample="redflag">Hot red knee</button>
-                    <button class="sample-button" type="button" data-sample="trauma">Major fall</button>
-                  </div>
-
-                  <div class="intake-actions"><button class="button primary" id="start-button" type="submit">Start</button></div>
-                </form>
-              </section>
-
-              <section class="workflow-card interview-stage surface" id="interview-stage" hidden>
-                <form id="question-form" class="question-stage-form"></form>
-              </section>
-
-              <section class="workflow-card result-stage surface" id="result-stage" hidden>
-                <div class="panel-head stage-head">
-                  <div>
-                    <p class="mini-label">Outcome</p>
-                    <h3>Session outcome</h3>
-                  </div>
-
-                  <span class="result-chip" id="result-chip">Waiting</span>
+                <div class="sample-row">
+                  <button class="sample-button" type="button" data-sample="acl">Twist and pop</button>
+                  <button class="sample-button" type="button" data-sample="meniscus">Catch and turn</button>
+                  <button class="sample-button" type="button" data-sample="pfps">Front pain</button>
+                  <button class="sample-button" type="button" data-sample="oa">Months of ache</button>
+                  <button class="sample-button" type="button" data-sample="redflag">Hot red knee</button>
+                  <button class="sample-button" type="button" data-sample="trauma">Major fall</button>
                 </div>
 
-                <div id="result-body" class="result-body empty-state">No result yet.</div>
-              </section>
-            </div>
+                <div class="intake-actions"><button class="button primary" id="start-button" type="submit">Start</button></div>
+              </form>
+            </section>
+
+            <section class="workflow-card interview-stage surface" id="interview-stage" hidden>
+              <form id="question-form" class="question-stage-form"></form>
+            </section>
+
+            <section class="workflow-card result-stage surface" id="result-stage" hidden>
+              <div class="panel-head stage-head">
+                <div>
+                  <p class="mini-label">Outcome</p>
+                  <h3>Session outcome</h3>
+                </div>
+
+                <span class="result-chip" id="result-chip">Waiting</span>
+              </div>
+
+              <div id="result-body" class="result-body empty-state">No result yet.</div>
+            </section>
           </div>
         </section>
       </main>
