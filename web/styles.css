@@ -28,6 +28,10 @@ html {
   scroll-behavior: smooth;
 }
 
+html.page-scale-80 {
+  zoom: 0.8;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -47,10 +51,6 @@ body {
   font-family: var(--body);
   font-size: 18px;
   line-height: 1.72;
-}
-
-body.page-scale-80 {
-  zoom: 0.8;
 }
 
 body.modal-open {
