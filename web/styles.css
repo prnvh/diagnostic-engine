@@ -39,7 +39,6 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
-  zoom: 0.8;
   background:
     radial-gradient(circle at top left, rgba(139, 98, 66, 0.08), transparent 24%),
     radial-gradient(circle at 82% 12%, rgba(37, 69, 61, 0.08), transparent 20%),
@@ -1344,32 +1343,29 @@ button:disabled {
 
 .workflow-shell {
   display: grid;
-  gap: 1rem;
+  gap: 1.05rem;
   align-items: start;
 }
 
-.workflow-stage-deck {
+.workflow-toolbar {
   display: grid;
-  gap: 1.1rem;
-  padding: 1.35rem;
+  gap: 0.95rem;
+  padding: 1.15rem 1.25rem;
   background: linear-gradient(180deg, rgba(255, 252, 247, 0.98), rgba(239, 233, 224, 0.88));
+  box-shadow: none;
+  border-color: rgba(31, 33, 27, 0.06);
 }
 
-.workflow-deck-head {
+.workflow-toolbar-head {
   display: flex;
-  align-items: end;
+  align-items: start;
   justify-content: space-between;
   gap: 1rem;
-  padding-bottom: 0.3rem;
+  padding-bottom: 0.2rem;
   border-bottom: 1px solid rgba(31, 33, 27, 0.08);
 }
 
-.workflow-deck-topline {
-  display: grid;
-  gap: 1rem;
-}
-
-.deck-actions {
+.workflow-toolbar-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.55rem;
@@ -1410,7 +1406,6 @@ button:disabled {
   padding: 1rem;
 }
 
-.stage-list,
 .rail-metrics,
 .candidate-state-list,
 .coverage-list {
@@ -1418,34 +1413,6 @@ button:disabled {
   gap: 0.85rem;
 }
 
-.stage-list {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.stage-chip {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 0.9rem;
-  align-items: start;
-  padding: 0.95rem 1rem;
-  border: 1px solid rgba(31, 33, 27, 0.08);
-  border-radius: var(--radius-md);
-  background: rgba(250, 245, 238, 0.74);
-  transition: border-color 140ms ease, background 140ms ease, transform 140ms ease;
-}
-
-.stage-chip[data-state="active"] {
-  border-color: rgba(37, 69, 61, 0.18);
-  background: linear-gradient(180deg, rgba(239, 245, 241, 0.92), rgba(251, 247, 241, 0.92));
-  transform: translateY(-1px);
-}
-
-.stage-chip[data-state="complete"] {
-  border-color: rgba(139, 98, 66, 0.16);
-  background: rgba(248, 241, 233, 0.92);
-}
-
-.stage-chip-index,
 .candidate-state-rank {
   display: inline-flex;
   align-items: center;
@@ -1462,7 +1429,6 @@ button:disabled {
   letter-spacing: 0.08em;
 }
 
-.stage-chip strong,
 .rail-metric strong,
 .coverage-item strong,
 .outcome-meta-item strong,
@@ -1471,7 +1437,6 @@ button:disabled {
   color: var(--text);
 }
 
-.stage-chip p,
 .candidate-state-card p {
   margin-top: 0.2rem;
 }
@@ -1544,10 +1509,6 @@ button:disabled {
 .result-chip[data-tone="danger"] {
   color: var(--danger);
   background: rgba(146, 72, 58, 0.12);
-}
-
-.workflow-stage-deck .status-banner {
-  margin-top: 0;
 }
 
 .workflow-card {
@@ -1794,7 +1755,7 @@ button:disabled {
 }
 
 .review-grid {
-  grid-template-columns: minmax(18rem, 0.82fr) minmax(0, 1.18fr);
+  grid-template-columns: 1fr;
 }
 
 .review-card-wide {
@@ -1871,20 +1832,19 @@ button:disabled {
 }
 
 @media (max-width: 920px) {
+  .workflow-toolbar,
   .workflow-card,
   .coverage-band-card,
   .review-card,
-  .support-card,
-  .workflow-stage-deck {
+  .support-card {
     padding: 1.2rem;
   }
 
-  .workflow-deck-head,
-  .deck-actions {
+  .workflow-toolbar-head,
+  .workflow-toolbar-actions {
     display: grid;
   }
 
-  .stage-list,
   .rail-metrics,
   .candidate-state-list,
   .outcome-meta-grid,
@@ -1898,7 +1858,6 @@ button:disabled {
 }
 
 @media (max-width: 720px) {
-  .stage-chip,
   .candidate-state-head,
   .intake-actions {
     display: grid;

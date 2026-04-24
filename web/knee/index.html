@@ -55,146 +55,118 @@
           </div>
 
           <div class="workflow-shell">
-            <section class="workflow-stage-deck surface">
-              <div class="workflow-deck-head">
+            <section class="workflow-toolbar surface">
+              <div class="workflow-toolbar-head">
                 <div>
-                  <p class="mini-label">Interactive flow</p>
-                  <h3>Give the intake and form flow their own working space</h3>
+                  <p class="mini-label">Session rail</p>
+                  <h3>Intake first, then one focused question at a time</h3>
                 </div>
 
-                <div class="deck-actions"><button class="ghost-button" id="reset-demo" type="button">Reset</button></div>
-              </div>
-
-              <div class="workflow-deck-topline">
-                <div class="stage-list" id="stage-list">
-                  <article class="stage-chip" data-stage-marker="intake">
-                    <span class="stage-chip-index">01</span>
-                    <div>
-                      <strong>Story intake</strong>
-                      <p>Describe the complaint in natural language.</p>
-                    </div>
-                  </article>
-
-                  <article class="stage-chip" data-stage-marker="forms">
-                    <span class="stage-chip-index">02</span>
-                    <div>
-                      <strong>Guided form</strong>
-                      <p>Confirm one high-value detail at a time.</p>
-                    </div>
-                  </article>
-
-                  <article class="stage-chip" data-stage-marker="outcome">
-                    <span class="stage-chip-index">03</span>
-                    <div>
-                      <strong>Shortlist outcome</strong>
-                      <p>Open the structured result when the form rounds are complete.</p>
-                    </div>
-                  </article>
-                </div>
-
-                <div class="rail-metrics" id="session-meta">
-                  <article class="rail-metric">
-                    <span class="rail-label">Session</span>
-                    <strong id="meta-session-id">Not started</strong>
-                  </article>
-
-                  <article class="rail-metric">
-                    <span class="rail-label">Status</span>
-                    <strong id="meta-status">Idle</strong>
-                  </article>
-
-                  <article class="rail-metric">
-                    <span class="rail-label">Answered</span>
-                    <strong id="meta-answered">0 of 3</strong>
-                  </article>
-
-                  <article class="rail-metric">
-                    <span class="rail-label">Engine round</span>
-                    <strong id="meta-round">0</strong>
-                  </article>
-                </div>
-                <div class="deck-actions">
+                <div class="workflow-toolbar-actions">
                   <a class="ghost-button" id="open-ledger-page" href="/knee/ledger/" target="_blank" rel="noopener">View ledger</a>
+                  <button class="ghost-button" id="reset-demo" type="button">Reset</button>
                 </div>
               </div>
 
-              <div class="status-banner" id="status-banner" hidden></div>
+              <div class="rail-metrics" id="session-meta">
+                <article class="rail-metric">
+                  <span class="rail-label">Session</span>
+                  <strong id="meta-session-id">Not started</strong>
+                </article>
 
-              <div class="workflow-main">
-                <section class="workflow-card intake-stage surface" id="intake-stage">
-                  <div class="panel-head stage-head">
-                    <div>
-                      <p class="mini-label">Story intake</p>
-                      <h3>Describe what happened in your own words</h3>
-                    </div>
-                  </div>
+                <article class="rail-metric">
+                  <span class="rail-label">Status</span>
+                  <strong id="meta-status">Idle</strong>
+                </article>
 
-                  <form id="start-form" class="intake-form">
-                    <input id="patient-id" name="patientId" type="hidden" />
+                <article class="rail-metric">
+                  <span class="rail-label">Answered</span>
+                  <strong id="meta-answered">0 of 3</strong>
+                </article>
 
-                    <label class="field">
-                      <span>Opening complaint</span>
-                      <textarea
-                        class="knee-textarea"
-                        id="complaint-text"
-                        name="text"
-                        rows="7"
-                        placeholder="Example: I twisted my knee playing football, felt a pop, it swelled that evening, and now it gives way."
-                        required
-                      ></textarea>
-                    </label>
-
-                    <div class="sample-row">
-                      <button class="sample-button" type="button" data-sample="acl">Twist and pop</button>
-                      <button class="sample-button" type="button" data-sample="meniscus">Catch and turn</button>
-                      <button class="sample-button" type="button" data-sample="pfps">Front pain</button>
-                      <button class="sample-button" type="button" data-sample="oa">Months of ache</button>
-                      <button class="sample-button" type="button" data-sample="redflag">Hot red knee</button>
-                      <button class="sample-button" type="button" data-sample="trauma">Major fall</button>
-                    </div>
-
-                    <div class="intake-actions"><button class="button primary" id="start-button" type="submit">Start</button></div>
-                  </form>
-                </section>
-
-                <section class="workflow-card interview-stage surface" id="interview-stage" hidden>
-                  <div class="panel-head stage-head">
-                    <div>
-                      <p class="mini-label">Guided form</p>
-                      <h3>One focused question at a time</h3>
-                    </div>
-
-                    <div class="question-progress" id="question-progress">Waiting for the first form prompt.</div>
-                  </div>
-
-                  <div class="interview-layout">
-                    <div class="interview-context">
-                      <article class="context-card"><p class="question-message" id="question-message">Waiting for first prompt.</p></article>
-
-                      <article class="context-card" id="question-note-card" hidden>
-                        <span class="note-label">Clarification note</span>
-                        <p class="question-note" id="question-note"></p>
-                      </article>
-                    </div>
-
-                    <form id="question-form" class="question-stage-form"></form>
-                  </div>
-                </section>
-
-                <section class="workflow-card result-stage surface" id="result-stage" hidden>
-                  <div class="panel-head stage-head">
-                    <div>
-                      <p class="mini-label">Outcome</p>
-                      <h3>Session outcome</h3>
-                    </div>
-
-                    <span class="result-chip" id="result-chip">Waiting</span>
-                  </div>
-
-                  <div id="result-body" class="result-body empty-state">No result yet.</div>
-                </section>
+                <article class="rail-metric">
+                  <span class="rail-label">Engine round</span>
+                  <strong id="meta-round">0</strong>
+                </article>
               </div>
             </section>
+
+            <div class="status-banner" id="status-banner" hidden></div>
+
+            <div class="workflow-main">
+              <section class="workflow-card intake-stage surface" id="intake-stage">
+                <div class="panel-head stage-head">
+                  <div>
+                    <p class="mini-label">Story intake</p>
+                    <h3>Describe what happened in your own words</h3>
+                  </div>
+                </div>
+
+                <form id="start-form" class="intake-form">
+                  <input id="patient-id" name="patientId" type="hidden" />
+
+                  <label class="field">
+                    <span>Opening complaint</span>
+                    <textarea
+                      class="knee-textarea"
+                      id="complaint-text"
+                      name="text"
+                      rows="7"
+                      placeholder="Example: I twisted my knee playing football, felt a pop, it swelled that evening, and now it gives way."
+                      required
+                    ></textarea>
+                  </label>
+
+                  <div class="sample-row">
+                    <button class="sample-button" type="button" data-sample="acl">Twist and pop</button>
+                    <button class="sample-button" type="button" data-sample="meniscus">Catch and turn</button>
+                    <button class="sample-button" type="button" data-sample="pfps">Front pain</button>
+                    <button class="sample-button" type="button" data-sample="oa">Months of ache</button>
+                    <button class="sample-button" type="button" data-sample="redflag">Hot red knee</button>
+                    <button class="sample-button" type="button" data-sample="trauma">Major fall</button>
+                  </div>
+
+                  <div class="intake-actions"><button class="button primary" id="start-button" type="submit">Start</button></div>
+                </form>
+              </section>
+
+              <section class="workflow-card interview-stage surface" id="interview-stage" hidden>
+                <div class="panel-head stage-head">
+                  <div>
+                    <p class="mini-label">Guided form</p>
+                    <h3>One focused question at a time</h3>
+                  </div>
+
+                  <div class="question-progress" id="question-progress">Waiting for the first form prompt.</div>
+                </div>
+
+                <div class="interview-layout">
+                  <div class="interview-context">
+                    <article class="context-card"><p class="question-message" id="question-message">Waiting for first prompt.</p></article>
+
+                    <article class="context-card" id="question-note-card" hidden>
+                      <span class="note-label">Clarification note</span>
+                      <p class="question-note" id="question-note"></p>
+                    </article>
+                  </div>
+
+                  <form id="question-form" class="question-stage-form"></form>
+                </div>
+              </section>
+
+              <section class="workflow-card result-stage surface" id="result-stage" hidden>
+                <div class="panel-head stage-head">
+                  <div>
+                    <p class="mini-label">Outcome</p>
+                    <h3>Session outcome</h3>
+                  </div>
+
+                  <span class="result-chip" id="result-chip">Waiting</span>
+                </div>
+
+                <div id="result-body" class="result-body empty-state">No result yet.</div>
+              </section>
+            </div>
 
             <div class="workflow-support-grid">
               <section class="support-card support-card-wide surface">
