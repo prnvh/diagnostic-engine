@@ -28,10 +28,6 @@ html {
   scroll-behavior: smooth;
 }
 
-html.page-scale-80 {
-  font-size: 80%;
-}
-
 * {
   box-sizing: border-box;
 }
@@ -49,8 +45,12 @@ body {
     linear-gradient(180deg, #faf7f1 0%, var(--bg) 48%, var(--bg-deep) 100%);
   color: var(--text);
   font-family: var(--body);
-  font-size: 1.125rem;
+  font-size: 18px;
   line-height: 1.72;
+}
+
+body.page-scale-80 {
+  zoom: 0.8;
 }
 
 body.modal-open {
