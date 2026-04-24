@@ -41,10 +41,6 @@ const elements = {
   metaStatus: document.getElementById("meta-status"),
   patientId: document.getElementById("patient-id"),
   questionForm: document.getElementById("question-form"),
-  questionMessage: document.getElementById("question-message"),
-  questionNote: document.getElementById("question-note"),
-  questionNoteCard: document.getElementById("question-note-card"),
-  questionProgress: document.getElementById("question-progress"),
   openLedgerPage: document.getElementById("open-ledger-page"),
   reopenShortlist: document.getElementById("reopen-shortlist"),
   resetButton: document.getElementById("reset-demo"),
@@ -342,12 +338,8 @@ function buildSubmitLabel(session) {
 function renderQuestionForm(form, session) {
   state.currentForm = form || null;
   state.currentQuestion = form?.questions?.[0] || null;
-  elements.questionMessage.textContent = "Answer the active symptom prompt.";
 
   if (!state.currentQuestion) {
-    elements.questionProgress.textContent = "Waiting for the first form prompt.";
-    elements.questionNoteCard.hidden = true;
-    elements.questionNote.textContent = "";
     elements.questionForm.innerHTML = '<div class="empty-state">The guided form appears after the opening story is parsed.</div>';
     return;
   }
@@ -358,18 +350,12 @@ function renderQuestionForm(form, session) {
       ? "This question is verifying a signal that was only tentative in the original story."
       : "");
 
-  elements.questionNoteCard.hidden = !clarificationNote;
-  elements.questionNote.textContent = clarificationNote;
-
-  const answeredRounds = session?.completedQuestionRounds ?? 0;
-  const minimumRounds = session?.minimumQuestionRoundsBeforeCandidates ?? 3;
-  elements.questionProgress.textContent = `Form round ${answeredRounds + 1} of at least ${minimumRounds}`;
-
   elements.questionForm.innerHTML = `
     <section class="question-panel">
       <div class="question-panel-head">
         <span class="question-phase-pill">${escapeHtml(formatTitleCase(state.currentQuestion.phase || "form"))}</span>
         <h4 class="question-title">${escapeHtml(state.currentQuestion.text)}</h4>
+        ${clarificationNote ? `<p class="question-caption">${escapeHtml(clarificationNote)}</p>` : ""}
       </div>
 
       ${renderQuestionChoices(state.currentQuestion)}
@@ -768,11 +754,6 @@ function resetDemo() {
 
   elements.startForm.reset();
   elements.patientId.value = createPatientId();
-  elements.questionMessage.textContent =
-    "Waiting for first prompt.";
-  elements.questionNoteCard.hidden = true;
-  elements.questionNote.textContent = "";
-  elements.questionProgress.textContent = "Waiting for the first form prompt.";
   elements.questionForm.innerHTML = '<div class="empty-state">The guided form appears after the opening story is parsed.</div>';
   elements.resultBody.className = "result-body empty-state";
   elements.resultBody.textContent = "No result yet.";
