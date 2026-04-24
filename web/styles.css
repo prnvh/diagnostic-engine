@@ -1608,7 +1608,9 @@ button:disabled {
 
 .intake-stage {
   min-height: auto;
-  background: linear-gradient(180deg, rgba(247, 252, 248, 0.98), rgba(228, 242, 234, 0.9));
+  background: linear-gradient(180deg, rgba(236, 248, 241, 0.98), rgba(206, 232, 216, 0.96));
+  border-color: rgba(37, 69, 61, 0.2);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 0 0 1px rgba(37, 69, 61, 0.08);
 }
 
 .intake-stage .stage-copy,
