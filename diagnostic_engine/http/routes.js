@@ -189,6 +189,57 @@ function buildCandidateResult(session, candidates) {
   };
 }
 
+function buildCandidatePresentationDecision({
+  candidates,
+  previousCandidates = [],
+  enoughQuestionRoundsCompleted,
+  canAskMoreQuestions,
+  selectedQuestions = [],
+  minimumLeadToPresent = 15,
+  minimumScoreToPresent = 80
+}) {
+  if (!enoughQuestionRoundsCompleted) {
+    return {
+      candidates: [],
+      source: null
+    };
+  }
+
+  const visibleCandidates = candidates.filter((candidate) => !candidate.hardBlocked);
+  const confidentCandidates = visibleCandidates.filter((candidate) => candidate.score >= minimumScoreToPresent);
+  const carryForwardCandidates = previousCandidates
+    .filter((candidate) => !candidate.hardBlocked && candidate.score >= minimumScoreToPresent)
+    .map((candidate) => visibleCandidates.find((currentCandidate) => currentCandidate.diseaseId === candidate.diseaseId))
+    .filter((candidate) => candidate && candidate.score >= 60);
+
+  const topCandidate = visibleCandidates[0] || null;
+  const runnerUp = visibleCandidates[1] || null;
+  const leadGap = topCandidate && runnerUp ? topCandidate.score - runnerUp.score : Number.POSITIVE_INFINITY;
+  const moreUsefulQuestionsRemain = canAskMoreQuestions && selectedQuestions.length > 0;
+
+  if (confidentCandidates.length > 0) {
+    const shortlistIsDecisive = leadGap >= minimumLeadToPresent;
+    if (!moreUsefulQuestionsRemain || shortlistIsDecisive) {
+      return {
+        candidates: confidentCandidates,
+        source: moreUsefulQuestionsRemain ? "current_round_decisive" : "no_more_useful_questions"
+      };
+    }
+  }
+
+  if (carryForwardCandidates.length > 0 && !moreUsefulQuestionsRemain) {
+    return {
+      candidates: carryForwardCandidates,
+      source: "validated_initial_shortlist"
+    };
+  }
+
+  return {
+    candidates: [],
+    source: null
+  };
+}
+
 async function evaluateSession(services, sessionId, { parsedUnparsed = null, scorerOptions = {} } = {}) {
   let session = await getSession(services.store, sessionId);
   const nextRound = session.round + 1;
@@ -232,16 +283,26 @@ async function evaluateSession(services, sessionId, { parsedUnparsed = null, sco
   const minQuestionRoundsBeforeCandidates = Math.max(services.config.minQuestionRoundsBeforeCandidates || 1, 1);
   const enoughQuestionRoundsCompleted = completedQuestionRounds >= minQuestionRoundsBeforeCandidates;
   const effectiveMaxRounds = Math.max(services.config.maxRounds, minQuestionRoundsBeforeCandidates, 1) + 1;
-  const confidentCandidates = candidates.filter((candidate) => !candidate.hardBlocked && candidate.score >= 80);
-  const carryForwardCandidates = (session.candidates || [])
-    .filter((candidate) => !candidate.hardBlocked && candidate.score >= 80)
-    .map((candidate) => candidates.find((currentCandidate) => currentCandidate.diseaseId === candidate.diseaseId))
-    .filter((candidate) => candidate && !candidate.hardBlocked && candidate.score >= 60);
-  const presentableCandidates = enoughQuestionRoundsCompleted
-    ? confidentCandidates.length > 0
-      ? confidentCandidates
-      : carryForwardCandidates
+  const canAskMoreQuestions = nextRound < effectiveMaxRounds;
+  const selectedQuestions = canAskMoreQuestions
+    ? selectQuestions({
+        registry: services.registry,
+        symptomState: session.symptomState,
+        candidates,
+        questionLog: session.questionLog,
+        round: nextRound,
+        limit: 1,
+        requireExplicitConfirmation: completedQuestionRounds < 2
+      })
     : [];
+  const candidateDecision = buildCandidatePresentationDecision({
+    candidates,
+    previousCandidates: session.candidates || [],
+    enoughQuestionRoundsCompleted,
+    canAskMoreQuestions,
+    selectedQuestions
+  });
+  const presentableCandidates = candidateDecision.candidates;
 
   if (presentableCandidates.length > 0) {
     session = await saveEvaluationState(services.store, sessionId, {
@@ -256,7 +317,7 @@ async function evaluateSession(services, sessionId, { parsedUnparsed = null, sco
     await appendEntry(services.store, sessionId, "CANDIDATE_FLAGGED", {
       round: nextRound,
       candidates: presentableCandidates.map((candidate) => candidate.diseaseId),
-      source: confidentCandidates.length > 0 ? "current_round_confident" : "validated_initial_shortlist"
+      source: candidateDecision.source
     });
     return {
       sessionId,
@@ -270,7 +331,7 @@ async function evaluateSession(services, sessionId, { parsedUnparsed = null, sco
     };
   }
 
-  if (nextRound >= effectiveMaxRounds) {
+  if (!canAskMoreQuestions) {
     session = await saveEvaluationState(services.store, sessionId, {
       candidates,
       eliminatedNodes,
@@ -299,16 +360,6 @@ async function evaluateSession(services, sessionId, { parsedUnparsed = null, sco
       }
     };
   }
-
-  const selectedQuestions = selectQuestions({
-    registry: services.registry,
-    symptomState: session.symptomState,
-    candidates,
-    questionLog: session.questionLog,
-    round: nextRound,
-    limit: 1,
-    requireExplicitConfirmation: completedQuestionRounds < 2
-  });
 
   const form = compileQuestionForm({
     questions: selectedQuestions,
