@@ -35,6 +35,7 @@ const elements = {
   intakeWarning: document.getElementById("intake-warning"),
   interviewStage: document.getElementById("interview-stage"),
   metaAnswered: document.getElementById("meta-answered"),
+  copySessionId: document.getElementById("copy-session-id"),
   metaRound: document.getElementById("meta-round"),
   metaSessionId: document.getElementById("meta-session-id"),
   metaStatus: document.getElementById("meta-status"),
@@ -200,9 +201,33 @@ function scrollWorkspaceIntoView() {
   });
 }
 
+function formatSessionIdDisplay(sessionId) {
+  if (!sessionId) {
+    return "Not started";
+  }
+
+  if (sessionId.length <= 24) {
+    return sessionId;
+  }
+
+  return `${sessionId.slice(0, 14)}...${sessionId.slice(-6)}`;
+}
+
+function syncSessionIdDisplay(sessionId) {
+  const displayValue = formatSessionIdDisplay(sessionId);
+  elements.metaSessionId.textContent = displayValue;
+  elements.metaSessionId.title = sessionId || "Not started";
+  elements.metaSessionId.setAttribute("aria-label", sessionId || "Not started");
+
+  if (elements.copySessionId) {
+    elements.copySessionId.hidden = !sessionId;
+    elements.copySessionId.disabled = !sessionId;
+  }
+}
+
 function renderMeta(session) {
   state.sessionId = session?.sessionId || null;
-  elements.metaSessionId.textContent = session?.sessionId || "Not started";
+  syncSessionIdDisplay(state.sessionId);
   elements.metaStatus.textContent = formatTitleCase(session?.status || "idle");
   elements.metaRound.textContent = String(session?.round ?? 0);
 
@@ -808,6 +833,19 @@ function bindSamples() {
   });
 }
 
+async function copySessionId() {
+  if (!state.sessionId) {
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(state.sessionId);
+    showStatus("Session key copied.", "success");
+  } catch (error) {
+    showStatus("Could not copy the session key.", "warning");
+  }
+}
+
 function consumeLaunchPayload() {
   const rawPayload = sessionStorage.getItem(KNEE_LAUNCH_STORAGE_KEY);
   if (!rawPayload) {
@@ -851,6 +889,11 @@ function init() {
   elements.startForm.addEventListener("submit", startSession);
   elements.questionForm.addEventListener("submit", answerQuestion);
   elements.resetButton.addEventListener("click", resetDemo);
+  if (elements.copySessionId) {
+    elements.copySessionId.addEventListener("click", () => {
+      void copySessionId();
+    });
+  }
   if (elements.reopenShortlist) {
     elements.reopenShortlist.addEventListener("click", openCandidateModal);
   }

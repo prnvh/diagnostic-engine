@@ -82,7 +82,7 @@
             <h2>Start intake and continue with symptom scoring prompts.</h2>
           </div>
 
-          <div class="workflow-shell">
+          <div class="workflow-shell surface">
             <section class="workflow-toolbar surface">
               <div class="workflow-toolbar-head">
                 <div>
@@ -97,9 +97,12 @@
               </div>
 
               <div class="rail-metrics" id="session-meta">
-                <article class="rail-metric">
+                <article class="rail-metric rail-metric-session">
                   <span class="rail-label">Session</span>
-                  <strong id="meta-session-id">Not started</strong>
+                  <div class="rail-metric-value-row">
+                    <strong id="meta-session-id" title="Not started">Not started</strong>
+                    <button class="metric-copy-button" id="copy-session-id" type="button" hidden>Copy</button>
+                  </div>
                 </article>
 
                 <article class="rail-metric">
