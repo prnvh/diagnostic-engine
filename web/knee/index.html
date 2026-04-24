@@ -195,63 +195,9 @@
                 <div id="result-body" class="result-body empty-state">No result yet.</div>
               </section>
             </div>
-
-            <div class="workflow-support-grid">
-              <section class="support-card support-card-wide surface">
-                <div class="rail-card-head">
-                  <div>
-                    <p class="mini-label">Registry intake</p>
-                    <h3>Parsed opening story</h3>
-                  </div>
-                  <span class="parser-badge" id="intake-parser-mode">Waiting</span>
-                </div>
-
-                <p class="intake-summary" id="intake-summary">
-                  Describe the knee problem in natural language. The intake parser will map the story into registry
-                  signals before the guided form begins.
-                </p>
-
-                <p class="parser-warning" id="intake-warning" hidden></p>
-                <div class="signal-cloud empty-state" id="intake-signals">No mapped signals yet.</div>
-              </section>
-
-              <article class="support-card shortlist-preview-card surface" id="candidate-preview-card" hidden>
-                <div class="rail-card-head">
-                  <div>
-                    <p class="mini-label">Shortlist ready</p>
-                    <h3>Reopen the candidate view</h3>
-                  </div>
-                </div>
-
-                <p id="candidate-preview-message">
-                  The structured shortlist is ready. Open the focused popup to inspect the final candidate set.
-                </p>
-                <button class="button primary wide" id="reopen-shortlist" type="button">Open structured shortlist</button>
-              </article>
-            </div>
-          </div>
-
-          <div class="review-grid">
-            <section class="review-card surface">
-              <div class="panel-head">
-                <div>
-                  <p class="mini-label">Shortlist state</p>
-                  <h3>What appears after the form rounds</h3>
-                </div>
-              </div>
-
-              <div id="candidate-debug" class="candidate-state-panel empty-state">
-                The shortlist stays hidden until the guided form rounds are complete.
-              </div>
-            </section>
-
           </div>
         </section>
       </main>
-
-      <footer class="site-footer surface">
-        <strong>Diagnostic Engine</strong>
-      </footer>
     </div>
 
     <div class="candidate-modal-shell" id="candidate-modal" hidden aria-hidden="true">

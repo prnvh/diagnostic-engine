@@ -154,7 +154,9 @@ function setBusy(isBusy) {
   });
 
   elements.resetButton.disabled = isBusy;
-  elements.reopenShortlist.disabled = isBusy || !state.latestCandidateResult;
+  if (elements.reopenShortlist) {
+    elements.reopenShortlist.disabled = isBusy || !state.latestCandidateResult;
+  }
 }
 
 async function requestJson(url, options = {}) {
@@ -224,6 +226,10 @@ function renderMeta(session) {
 }
 
 function renderParserOutput(parserOutput) {
+  if (!elements.intakeParserMode || !elements.intakeSummary || !elements.intakeSignals || !elements.intakeWarning) {
+    return;
+  }
+
   const mode = parserOutput?.mode || "";
   const summary =
     parserOutput?.summary?.trim() ||
@@ -421,6 +427,10 @@ function renderCandidateModal(result, session) {
 }
 
 function renderCandidatePreview(result, session) {
+  if (!elements.candidatePreviewCard || !elements.candidatePreviewMessage) {
+    return;
+  }
+
   if (!result || result.type !== "candidates") {
     elements.candidatePreviewCard.hidden = true;
     elements.candidatePreviewMessage.textContent =
@@ -435,6 +445,10 @@ function renderCandidatePreview(result, session) {
 }
 
 function renderCandidateState(result) {
+  if (!elements.candidateDebug) {
+    return;
+  }
+
   if (!result) {
     elements.candidateDebug.className = "candidate-state-panel empty-state";
     elements.candidateDebug.textContent = "The shortlist stays hidden until the guided form rounds are complete.";
@@ -640,7 +654,7 @@ async function handleEngineResponse(payload, { scroll = false } = {}) {
   }
 
   if (result?.type === "candidates") {
-    showStatus("The shortlist is ready. The structured candidate popup is open now, and you can reopen it from the rail anytime.", "success");
+    showStatus("The shortlist is ready. The structured candidate popup is open now, and you can reopen it from the result panel anytime.", "success");
     return;
   }
 
@@ -837,7 +851,9 @@ function init() {
   elements.startForm.addEventListener("submit", startSession);
   elements.questionForm.addEventListener("submit", answerQuestion);
   elements.resetButton.addEventListener("click", resetDemo);
-  elements.reopenShortlist.addEventListener("click", openCandidateModal);
+  if (elements.reopenShortlist) {
+    elements.reopenShortlist.addEventListener("click", openCandidateModal);
+  }
   elements.resultBody.addEventListener("click", (event) => {
     if (event.target.closest("[data-open-candidate-modal='true']")) {
       openCandidateModal();

@@ -1379,8 +1379,7 @@ button:disabled {
 
 .workflow-card,
 .coverage-band-card,
-.review-card,
-.support-card {
+.review-card {
   padding: 1.35rem;
 }
 
@@ -1517,39 +1516,8 @@ button:disabled {
   border-color: rgba(31, 33, 27, 0.06);
 }
 
-.intake-summary,
 .stage-copy {
   max-width: 60rem;
-}
-
-.parser-warning {
-  color: #785230;
-  font-size: 0.96rem;
-  line-height: 1.55;
-}
-
-.workflow-support-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(18rem, 0.65fr);
-  gap: 1rem;
-  align-items: start;
-}
-
-.support-card {
-  display: grid;
-  gap: 0.85rem;
-}
-
-.support-card.surface {
-  background: linear-gradient(180deg, rgba(255, 252, 247, 0.98), rgba(243, 238, 229, 0.84));
-  box-shadow: none;
-  border-color: rgba(31, 33, 27, 0.06);
-}
-
-.signal-cloud {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.6rem;
 }
 
 .signal-pill {
@@ -1564,15 +1532,10 @@ button:disabled {
   line-height: 1.2;
 }
 
-.shortlist-preview-card {
-  gap: 0.8rem;
-}
-
 .intake-form,
 .interview-layout,
 .question-stage-form,
 .outcome-meta-grid,
-.review-grid,
 .coverage-band-grid {
   display: grid;
   gap: 1rem;
@@ -1754,53 +1717,6 @@ button:disabled {
   background: rgba(255, 252, 247, 0.74);
 }
 
-.review-grid {
-  grid-template-columns: 1fr;
-}
-
-.review-card-wide {
-  min-width: 0;
-}
-
-.candidate-state-panel,
-.candidate-state-panel.empty-state {
-  min-height: 100%;
-}
-
-.candidate-state-list {
-  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
-}
-
-.candidate-state-card {
-  display: grid;
-  gap: 0.55rem;
-}
-
-.candidate-state-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.8rem;
-}
-
-.candidate-state-head > div {
-  display: grid;
-  gap: 0.35rem;
-}
-
-.candidate-state-note strong {
-  display: block;
-  margin-bottom: 0.45rem;
-}
-
-.candidate-state-panel-warning .candidate-state-note {
-  background: rgba(139, 98, 66, 0.1);
-}
-
-.candidate-state-panel-danger .candidate-state-note {
-  background: rgba(146, 72, 58, 0.1);
-}
-
 .coverage-heading {
   max-width: 74rem;
 }
@@ -1824,8 +1740,6 @@ button:disabled {
 }
 
 @media (max-width: 1220px) {
-  .workflow-support-grid,
-  .review-grid,
   .coverage-band-grid {
     grid-template-columns: 1fr;
   }
@@ -1835,8 +1749,7 @@ button:disabled {
   .workflow-toolbar,
   .workflow-card,
   .coverage-band-card,
-  .review-card,
-  .support-card {
+  .review-card {
     padding: 1.2rem;
   }
 
@@ -1846,7 +1759,6 @@ button:disabled {
   }
 
   .rail-metrics,
-  .candidate-state-list,
   .outcome-meta-grid,
   .interview-context {
     grid-template-columns: 1fr;
@@ -1858,7 +1770,6 @@ button:disabled {
 }
 
 @media (max-width: 720px) {
-  .candidate-state-head,
   .intake-actions {
     display: grid;
   }
