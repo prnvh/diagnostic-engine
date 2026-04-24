@@ -14,7 +14,7 @@ function compileQuestionForm({ questions, symptomState, registry }) {
 
   const messageLines = [
     "The opening story has been mapped into the symptom registry. Answer the next form question as directly as you can.",
-    "For 1-5 scales: 1 means minimal and 5 means dominant or severe."
+    "For 0-5 scales: 0 means none or absent, and 5 means dominant or severe."
   ];
 
   if (clarificationNotes.length > 0) {
@@ -33,12 +33,12 @@ function compileQuestionForm({ questions, symptomState, registry }) {
         ? (() => {
             const labels = registry.symptomById.get(question.maps_to[0])?.scale_labels;
             if (Array.isArray(labels) && labels.length >= 6) {
-              return labels.slice(1, 6);
+              return labels.slice(0, 6);
             }
             if (Array.isArray(labels) && labels.length === 5) {
-              return labels;
+              return ["none", ...labels];
             }
-            return ["trace", "mild", "moderate", "marked", "severe"];
+            return ["none", "trace", "mild", "moderate", "marked", "severe"];
           })()
         : undefined,
     clarification:

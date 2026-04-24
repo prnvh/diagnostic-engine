@@ -284,37 +284,16 @@ function renderParserOutput(parserOutput) {
   }
 }
 
-function formatSymptomKey(symptomId) {
-  return String(symptomId || "")
-    .split("_")
-    .filter(Boolean)
-    .map((chunk) => chunk.charAt(0).toUpperCase() + chunk.slice(1))
-    .join(" ");
-}
-
-function buildSymptomPrompt(question) {
-  const mappedSymptoms = Array.isArray(question?.mapsTo) ? question.mapsTo : [];
-  const primary = mappedSymptoms[0] || question?.id || "symptom";
-
-  if (question.type === "scale_0_5") {
-    return `Score ${formatSymptomKey(primary)} (0-5)`;
-  }
-  if (question.type === "multi_select") {
-    return `Select present signals for ${formatSymptomKey(primary)}`;
-  }
-  if (question.type === "boolean") {
-    return `Set ${formatSymptomKey(primary)} (true/false)`;
-  }
-  return `Set value for ${formatSymptomKey(primary)}`;
-}
-
 function renderQuestionChoices(question) {
   if (question.type === "scale_0_5") {
-    const scaleLabels = Array.isArray(question.scaleLabels) ? question.scaleLabels : [];
+    const scaleLabels =
+      Array.isArray(question.scaleLabels) && question.scaleLabels.length >= 6
+        ? question.scaleLabels.slice(0, 6)
+        : ["none", "trace", "mild", "moderate", "marked", "severe"];
     return `
       <div class="scale-choice-grid">
-        ${Array.from({ length: 5 }, (_, index) => {
-          const value = index + 1;
+        ${Array.from({ length: scaleLabels.length }, (_, index) => {
+          const value = index;
           const label = scaleLabels[index] || "";
           return `
             <label class="choice-chip scale-chip">
@@ -390,8 +369,7 @@ function renderQuestionForm(form, session) {
     <section class="question-panel">
       <div class="question-panel-head">
         <span class="question-phase-pill">${escapeHtml(formatTitleCase(state.currentQuestion.phase || "form"))}</span>
-        <h4 class="question-title">${escapeHtml(buildSymptomPrompt(state.currentQuestion))}</h4>
-        <p class="question-caption">Original: ${escapeHtml(state.currentQuestion.text)}</p>
+        <h4 class="question-title">${escapeHtml(state.currentQuestion.text)}</h4>
       </div>
 
       ${renderQuestionChoices(state.currentQuestion)}

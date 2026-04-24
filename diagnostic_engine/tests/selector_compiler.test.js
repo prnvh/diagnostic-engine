@@ -77,3 +77,15 @@ test("compiler adds clarification note for low-confidence symptoms", () => {
   assert.equal(form.questions[0].clarification, true);
   assert.ok(form.clarificationNotes[0].includes("tentatively"));
 });
+
+test("compiler preserves full 0-5 scale labels for question forms", () => {
+  const questions = [registry.questionById.get("knee_q_006_swelling")];
+  const form = compileQuestionForm({
+    questions,
+    symptomState: {},
+    registry
+  });
+
+  assert.deepEqual(form.questions[0].scaleLabels, ["none", "trace", "mild", "moderate", "marked", "severe"]);
+  assert.ok(form.message.includes("0-5 scales"));
+});
