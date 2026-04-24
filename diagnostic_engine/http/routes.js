@@ -1,15 +1,23 @@
 const fs = require("node:fs/promises");
 const http = require("node:http");
 const path = require("node:path");
-const { appendEntry, getLedger } = require("../state/ledger");
-const { appendRawMessage, createSession, findReusableSession, getSession, recordQuestionBatch, saveEvaluationState, upsertSymptoms } = require("../state/session");
-const { createStore } = require("../state/store");
-const { compileQuestionForm, mapQuestionResponsesToSymptoms } = require("../engine/compiler");
-const { buildFallbackResult } = require("../engine/fallback");
-const { parseInitialText } = require("../engine/parser");
-const { scoreCandidates } = require("../engine/scorer");
-const { selectQuestions } = require("../engine/selector");
-const { evaluateSafety } = require("../engine/safety");
+const { appendEntry, getLedger } = require("../storage/ledger");
+const {
+  appendRawMessage,
+  createSession,
+  findReusableSession,
+  getSession,
+  recordQuestionBatch,
+  saveEvaluationState,
+  upsertSymptoms
+} = require("../storage/session");
+const { createStore } = require("../storage/store");
+const { compileQuestionForm, mapQuestionResponsesToSymptoms } = require("../core/engine/compiler");
+const { buildFallbackResult } = require("../core/engine/fallback");
+const { parseInitialComplaint } = require("../core/engine/intake-parser");
+const { scoreCandidates } = require("../core/engine/scorer");
+const { selectQuestions } = require("../core/engine/selector");
+const { evaluateSafety } = require("../core/engine/safety");
 
 const STATIC_CONTENT_TYPES = {
   ".css": "text/css; charset=utf-8",
@@ -81,6 +89,11 @@ function normalizeApiPath(pathname) {
   return normalized || "/";
 }
 
+function isWithinDirectory(rootDirectory, filePath) {
+  const relativePath = path.relative(rootDirectory, filePath);
+  return relativePath && !relativePath.startsWith("..") && !path.isAbsolute(relativePath);
+}
+
 function buildDirectSymptomUpdates(answers) {
   const updates = {};
   for (const [symptomId, value] of Object.entries(answers || {})) {
@@ -107,15 +120,56 @@ function buildCandidateSummary(candidate) {
   };
 }
 
-function buildSessionSnapshot(session) {
+function buildParserOutput(parserOutput = {}, overrides = {}) {
+  const merged = {
+    ...parserOutput,
+    ...overrides
+  };
+
+  return {
+    unparsed: Array.isArray(merged.unparsed) ? merged.unparsed : [],
+    mode: typeof merged.mode === "string" && merged.mode ? merged.mode : null,
+    summary: typeof merged.summary === "string" ? merged.summary : "",
+    evidencePreview: Array.isArray(merged.evidencePreview) ? merged.evidencePreview : [],
+    warning: typeof merged.warning === "string" && merged.warning.trim() ? merged.warning.trim() : null
+  };
+}
+
+function getPresentedQuestionRounds(session) {
+  if (!session || !Array.isArray(session.questionLog)) {
+    return 0;
+  }
+
+  return session.questionLog.length;
+}
+
+function getAnsweredQuestionRounds(session) {
+  const presentedQuestionRounds = getPresentedQuestionRounds(session);
+  if (session?.latestForm) {
+    return Math.max(presentedQuestionRounds - 1, 0);
+  }
+
+  return presentedQuestionRounds;
+}
+
+function buildSessionSnapshot(session, config = {}) {
+  const presentedQuestionRounds = getPresentedQuestionRounds(session);
+  const answeredQuestionRounds = getAnsweredQuestionRounds(session);
+  const minimumQuestionRoundsBeforeCandidates = Math.max(config.minQuestionRoundsBeforeCandidates || 1, 1);
+
   return {
     sessionId: session.sessionId,
     patientId: session.patientId,
     bodyRegion: session.bodyRegion,
     status: session.status,
     round: session.round,
+    completedQuestionRounds: answeredQuestionRounds,
+    answeredQuestionRounds,
+    presentedQuestionRounds,
+    minimumQuestionRoundsBeforeCandidates,
+    remainingQuestionRoundsBeforeCandidates: Math.max(minimumQuestionRoundsBeforeCandidates - answeredQuestionRounds, 0),
     latestForm: session.latestForm || null,
-    parserOutput: session.parserOutput || { unparsed: [] },
+    parserOutput: buildParserOutput(session.parserOutput),
     questionLog: session.questionLog || [],
     topCandidates: (session.candidates || []).slice(0, 3).map(buildCandidateSummary),
     ledgerPath: `/api/session/ledger?sessionId=${encodeURIComponent(session.sessionId)}`,
@@ -125,11 +179,12 @@ function buildSessionSnapshot(session) {
 }
 
 function buildCandidateResult(session, candidates) {
-  const visibleCandidates = candidates.filter((candidate) => !candidate.hardBlocked && candidate.score >= 80);
+  const visibleCandidates = candidates.filter((candidate) => !candidate.hardBlocked);
   return {
     type: "candidates",
     sessionId: session.sessionId,
-    message: "These conditions fit the current evidence most strongly. This is a fit score, not a diagnosis.",
+    message:
+      "After the intake story and guided form rounds, these conditions fit the current evidence most strongly. This is a fit score, not a diagnosis.",
     candidates: visibleCandidates.map(buildCandidateSummary)
   };
 }
@@ -137,6 +192,9 @@ function buildCandidateResult(session, candidates) {
 async function evaluateSession(services, sessionId, { parsedUnparsed = null, scorerOptions = {} } = {}) {
   let session = await getSession(services.store, sessionId);
   const nextRound = session.round + 1;
+  const parserOutput = buildParserOutput(session.parserOutput, {
+    unparsed: parsedUnparsed ?? session.parserOutput?.unparsed ?? []
+  });
 
   const safety = evaluateSafety(session.symptomState);
   if (safety.escalated) {
@@ -144,13 +202,14 @@ async function evaluateSession(services, sessionId, { parsedUnparsed = null, sco
       status: "escalated",
       latestForm: null,
       round: nextRound,
-      debounceExpiresAt: new Date(Date.now() + services.config.sessionDebounceMs).toISOString()
+      debounceExpiresAt: new Date(Date.now() + services.config.sessionDebounceMs).toISOString(),
+      parserOutput
     });
     await appendEntry(services.store, sessionId, "SAFETY_ESCALATED", { reasons: safety.reasons });
     return {
       sessionId,
       round: session.round,
-      session: buildSessionSnapshot(session),
+      session: buildSessionSnapshot(session, services.config),
       result: {
         type: "escalation",
         message: safety.message,
@@ -169,8 +228,22 @@ async function evaluateSession(services, sessionId, { parsedUnparsed = null, sco
     }))
   });
 
+  const completedQuestionRounds = getPresentedQuestionRounds(session);
+  const minQuestionRoundsBeforeCandidates = Math.max(services.config.minQuestionRoundsBeforeCandidates || 1, 1);
+  const enoughQuestionRoundsCompleted = completedQuestionRounds >= minQuestionRoundsBeforeCandidates;
+  const effectiveMaxRounds = Math.max(services.config.maxRounds, minQuestionRoundsBeforeCandidates, 1) + 1;
   const confidentCandidates = candidates.filter((candidate) => !candidate.hardBlocked && candidate.score >= 80);
-  if (confidentCandidates.length > 0) {
+  const carryForwardCandidates = (session.candidates || [])
+    .filter((candidate) => !candidate.hardBlocked && candidate.score >= 80)
+    .map((candidate) => candidates.find((currentCandidate) => currentCandidate.diseaseId === candidate.diseaseId))
+    .filter((candidate) => candidate && !candidate.hardBlocked && candidate.score >= 60);
+  const presentableCandidates = enoughQuestionRoundsCompleted
+    ? confidentCandidates.length > 0
+      ? confidentCandidates
+      : carryForwardCandidates
+    : [];
+
+  if (presentableCandidates.length > 0) {
     session = await saveEvaluationState(services.store, sessionId, {
       candidates,
       eliminatedNodes,
@@ -178,19 +251,18 @@ async function evaluateSession(services, sessionId, { parsedUnparsed = null, sco
       round: nextRound,
       status: "complete",
       debounceExpiresAt: new Date(Date.now() + services.config.sessionDebounceMs).toISOString(),
-      parserOutput: {
-        unparsed: parsedUnparsed ?? session.parserOutput?.unparsed ?? []
-      }
+      parserOutput
     });
     await appendEntry(services.store, sessionId, "CANDIDATE_FLAGGED", {
       round: nextRound,
-      candidates: confidentCandidates.map((candidate) => candidate.diseaseId)
+      candidates: presentableCandidates.map((candidate) => candidate.diseaseId),
+      source: confidentCandidates.length > 0 ? "current_round_confident" : "validated_initial_shortlist"
     });
     return {
       sessionId,
       round: session.round,
-      session: buildSessionSnapshot(session),
-      result: buildCandidateResult(session, confidentCandidates),
+      session: buildSessionSnapshot(session, services.config),
+      result: buildCandidateResult(session, presentableCandidates),
       debug: {
         topCandidates: candidates.slice(0, 3),
         eliminatedNodes
@@ -198,7 +270,7 @@ async function evaluateSession(services, sessionId, { parsedUnparsed = null, sco
     };
   }
 
-  if (nextRound >= services.config.maxRounds) {
+  if (nextRound >= effectiveMaxRounds) {
     session = await saveEvaluationState(services.store, sessionId, {
       candidates,
       eliminatedNodes,
@@ -206,9 +278,7 @@ async function evaluateSession(services, sessionId, { parsedUnparsed = null, sco
       round: nextRound,
       status: "fallback",
       debounceExpiresAt: new Date(Date.now() + services.config.sessionDebounceMs).toISOString(),
-      parserOutput: {
-        unparsed: parsedUnparsed ?? session.parserOutput?.unparsed ?? []
-      }
+      parserOutput
     });
     await appendEntry(services.store, sessionId, "FALLBACK_TRIGGERED", {
       round: nextRound,
@@ -217,7 +287,7 @@ async function evaluateSession(services, sessionId, { parsedUnparsed = null, sco
     return {
       sessionId,
       round: session.round,
-      session: buildSessionSnapshot(session),
+      session: buildSessionSnapshot(session, services.config),
       result: buildFallbackResult({
         session,
         candidates,
@@ -236,7 +306,8 @@ async function evaluateSession(services, sessionId, { parsedUnparsed = null, sco
     candidates,
     questionLog: session.questionLog,
     round: nextRound,
-    limit: 3
+    limit: 1,
+    requireExplicitConfirmation: completedQuestionRounds < 2
   });
 
   const form = compileQuestionForm({
@@ -284,9 +355,7 @@ async function evaluateSession(services, sessionId, { parsedUnparsed = null, sco
     status: "questioning",
     latestForm: form,
     debounceExpiresAt: new Date(Date.now() + services.config.sessionDebounceMs).toISOString(),
-    parserOutput: {
-      unparsed: parsedUnparsed ?? session.parserOutput?.unparsed ?? []
-    }
+    parserOutput
   });
   await recordQuestionBatch(services.store, sessionId, selectedQuestions, nextRound);
 
@@ -294,7 +363,7 @@ async function evaluateSession(services, sessionId, { parsedUnparsed = null, sco
   return {
     sessionId,
     round: session.round,
-    session: buildSessionSnapshot(session),
+    session: buildSessionSnapshot(session, services.config),
     form,
     debug: {
       topCandidates: candidates.slice(0, 3),
@@ -313,7 +382,11 @@ async function startDiagnosticSession(services, payload, options = {}) {
     bodyRegion: payload.bodyRegion || "knee"
   });
 
-  const parseResult = parseInitialText(payload.text, services.registry);
+  const parseResult = await parseInitialComplaint({
+    text: payload.text,
+    registry: services.registry,
+    config: services.config
+  });
   let session;
 
   if (reusableSession) {
@@ -336,7 +409,14 @@ async function startDiagnosticSession(services, payload, options = {}) {
 
   await appendEntry(services.store, session.sessionId, "PARSE_MERGED", {
     unparsed: parseResult.unparsed,
-    parsedKeys: Object.keys(parseResult.evidence)
+    parsedKeys: Object.keys(parseResult.evidence),
+    mode: parseResult.mode,
+    summary: parseResult.summary,
+    warning: parseResult.warning || null
+  });
+
+  await saveEvaluationState(services.store, session.sessionId, {
+    parserOutput: buildParserOutput(parseResult)
   });
 
   return evaluateSession(services, session.sessionId, {
@@ -388,16 +468,16 @@ async function tryServeStaticAsset(services, pathname, response) {
     return false;
   }
 
-  const publicRoot = path.resolve(services.config.cwd, "public");
+  const webRoot = services.config.webDir;
   const assetPath = pathname === "/" ? "index.html" : pathname.replace(/^\/+/, "");
-  const candidatePaths = [path.resolve(publicRoot, assetPath)];
+  const candidatePaths = [path.resolve(webRoot, assetPath)];
 
   if (!path.extname(assetPath)) {
-    candidatePaths.push(path.resolve(publicRoot, assetPath, "index.html"));
+    candidatePaths.push(path.resolve(webRoot, assetPath, "index.html"));
   }
 
   for (const filePath of candidatePaths) {
-    if (!filePath.startsWith(publicRoot)) {
+    if (!isWithinDirectory(webRoot, filePath) && filePath !== path.join(webRoot, "index.html")) {
       return false;
     }
 
@@ -474,7 +554,7 @@ function createRequestHandler(services) {
         if (!session) {
           throw new Error(`Session ${querySessionId} not found`);
         }
-        result = { session: buildSessionSnapshot(session) };
+        result = { session: buildSessionSnapshot(session, services.config) };
       } else if (request.method === "GET" && ledgerMatch) {
         const sessionId = decodeURIComponent(ledgerMatch[1]);
         result = { sessionId, ledger: await getLedger(services.store, sessionId) };
@@ -484,7 +564,7 @@ function createRequestHandler(services) {
         if (!session) {
           throw new Error(`Session ${sessionId} not found`);
         }
-        result = { session: buildSessionSnapshot(session) };
+        result = { session: buildSessionSnapshot(session, services.config) };
       } else {
         const payload = jsonResponse(404, { error: "Not found" });
         response.writeHead(payload.statusCode, payload.headers);

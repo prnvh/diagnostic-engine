@@ -2,13 +2,13 @@
   "name": "diagnostic-engine",
   "version": "1.0.0",
   "description": "Registry-driven symptom reasoning engine for knee complaints.",
-  "main": "index.js",
+  "main": "diagnostic_engine/runtime/index.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "node --watch index.js",
-    "test": "node --test",
-    "validate-registry": "node registry-validator/validate.js",
-    "benchmark": "node benchmark/harness.js"
+    "start": "node diagnostic_engine/runtime/index.js",
+    "dev": "node --watch diagnostic_engine/runtime/index.js",
+    "test": "node --test diagnostic_engine/tests/*.test.js",
+    "validate-registry": "node diagnostic_engine/core/registry/validate.js",
+    "benchmark": "node diagnostic_engine/benchmarks/harness.js"
   },
   "keywords": [
     "diagnostic",

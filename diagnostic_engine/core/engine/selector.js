@@ -32,10 +32,15 @@ function evaluateCondition(condition, symptomState) {
   }
 }
 
-function allMappedKnown(question, symptomState) {
+function allMappedKnown(question, symptomState, { requireExplicitConfirmation = false } = {}) {
   return question.maps_to.every((key) => {
     const entry = symptomState[key];
-    return entry && entry.value != null && entry.status !== "low_confidence";
+    return (
+      entry &&
+      entry.value != null &&
+      entry.status !== "low_confidence" &&
+      (!requireExplicitConfirmation || entry.status === "explicit")
+    );
   });
 }
 
@@ -69,7 +74,7 @@ function buildWeightIndex(registry) {
   return weightIndex;
 }
 
-function scoreQuestion(question, topCandidates, symptomState, round, weightIndex) {
+function scoreQuestion(question, topCandidates, symptomState, round, weightIndex, { requireExplicitConfirmation = false } = {}) {
   let score = question.priority * 4;
 
   if (round === 1) {
@@ -98,6 +103,8 @@ function scoreQuestion(question, topCandidates, symptomState, round, weightIndex
       score += maxWeight * 5;
     } else if (status === "low_confidence") {
       score += maxWeight * 3 + 10;
+    } else if (requireExplicitConfirmation && status === "inferred") {
+      score += maxWeight * 4 + 8;
     }
 
     score += (maxWeight - minWeight) * 4;
@@ -119,7 +126,15 @@ function scoreQuestion(question, topCandidates, symptomState, round, weightIndex
   return score;
 }
 
-function selectQuestions({ registry, symptomState, candidates, questionLog, round, limit = 3 }) {
+function selectQuestions({
+  registry,
+  symptomState,
+  candidates,
+  questionLog,
+  round,
+  limit = 3,
+  requireExplicitConfirmation = false
+}) {
   const askedQuestionIds = new Set(questionLog.flatMap((entry) => entry.questionIds));
   const topCandidates = candidates.filter((candidate) => !candidate.hardBlocked && candidate.score >= 60).slice(0, 3);
   const candidatePool = topCandidates.length ? topCandidates : candidates.filter((candidate) => !candidate.hardBlocked).slice(0, 3);
@@ -127,7 +142,7 @@ function selectQuestions({ registry, symptomState, candidates, questionLog, roun
 
   const scoredQuestions = registry.questionBank.questions
     .filter((question) => !askedQuestionIds.has(question.id))
-    .filter((question) => !allMappedKnown(question, symptomState))
+    .filter((question) => !allMappedKnown(question, symptomState, { requireExplicitConfirmation }))
     .filter((question) => (question.requires || []).every((condition) => evaluateCondition(condition, symptomState)))
     .filter((question) => (question.blocks_if || []).every((condition) => !evaluateCondition(condition, symptomState)))
     .filter((question) => {
@@ -138,7 +153,7 @@ function selectQuestions({ registry, symptomState, candidates, questionLog, roun
     })
     .map((question) => ({
       question,
-      score: scoreQuestion(question, candidatePool, symptomState, round, weightIndex)
+      score: scoreQuestion(question, candidatePool, symptomState, round, weightIndex, { requireExplicitConfirmation })
     }))
     .sort((left, right) => right.score - left.score);
 

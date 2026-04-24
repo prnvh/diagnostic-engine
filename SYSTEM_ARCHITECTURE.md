@@ -12,6 +12,7 @@ It is designed as a mini MVP demo, not as a medical diagnosis system. Its job is
 - convert that complaint into controlled symptom evidence
 - score a small set of structured disease nodes
 - ask the next best follow-up questions
+- require at least one completed follow-up round before showing a shortlist
 - escalate when red-flag patterns appear
 - stop with a cautious fallback when the evidence is not strong enough
 
@@ -37,20 +38,20 @@ The system is built around a few hard rules:
 
 ```mermaid
 flowchart LR
-    User["User"] --> UI["Static Demo UI<br/>public/index.html + app.js"]
-    UI --> API["HTTP Layer<br/>server/routes.js"]
-    API --> Parser["Parser<br/>engine/parser.js"]
-    API --> Safety["Safety Rules<br/>engine/safety.js"]
-    API --> Scorer["Candidate Scorer<br/>engine/scorer.js"]
-    API --> Selector["Question Selector<br/>engine/selector.js"]
-    API --> Compiler["Form Compiler<br/>engine/compiler.js"]
-    API --> Session["Session State<br/>state/session.js"]
-    API --> Ledger["Append-Only Ledger<br/>state/ledger.js"]
-    Session --> Store["Storage Adapter<br/>state/store.js"]
+    User["User"] --> UI["Static Demo UI<br/>web/index.html + web/home.js<br/>web/knee/index.html + web/app.js"]
+    UI --> API["HTTP Layer<br/>diagnostic_engine/http/routes.js"]
+    API --> Parser["Parser<br/>diagnostic_engine/core/engine/parser.js"]
+    API --> Safety["Safety Rules<br/>diagnostic_engine/core/engine/safety.js"]
+    API --> Scorer["Candidate Scorer<br/>diagnostic_engine/core/engine/scorer.js"]
+    API --> Selector["Question Selector<br/>diagnostic_engine/core/engine/selector.js"]
+    API --> Compiler["Form Compiler<br/>diagnostic_engine/core/engine/compiler.js"]
+    API --> Session["Session State<br/>diagnostic_engine/storage/session.js"]
+    API --> Ledger["Append-Only Ledger<br/>diagnostic_engine/storage/ledger.js"]
+    Session --> Store["Storage Adapter<br/>diagnostic_engine/storage/store.js"]
     Ledger --> Store
     Store --> FileStore["Local File Store"]
     Store --> Supabase["Supabase Store"]
-    Parser --> Registry["Knowledge Registry<br/>registry/*.json"]
+    Parser --> Registry["Knowledge Registry<br/>diagnostic_engine/core/registry/*.json"]
     Scorer --> Registry
     Selector --> Registry
     Compiler --> Registry
@@ -64,9 +65,9 @@ The registry is the source of truth for the engine's reasoning model.
 
 It lives under:
 
-- `registry/symptoms/knee.json`
-- `registry/questions/knee.json`
-- `registry/diseases/knee/*.json`
+- `diagnostic_engine/core/registry/symptoms/knee.json`
+- `diagnostic_engine/core/registry/questions/knee.json`
+- `diagnostic_engine/core/registry/diseases/knee/*.json`
 
 The registry separates responsibilities cleanly:
 
@@ -78,7 +79,7 @@ This separation matters because it keeps the engine from hiding medical logic in
 
 ### 2. Registry Validation
 
-Before the app starts, the registry is validated by `registry-validator/validate.js`.
+Before the app starts, the registry is validated by `diagnostic_engine/core/registry/validate.js`.
 
 Validation exists to catch structural problems early, such as:
 
@@ -93,15 +94,15 @@ That means the runtime assumes the registry is internally consistent and can sta
 
 The shared runtime entry lives in:
 
-- `index.js` for local Node hosting
-- `api/[...route].js` for Vercel serverless hosting
-- `lib/runtime.js` for lazy service initialization
-- `server/routes.js` for the actual HTTP behavior
+- `diagnostic_engine/runtime/index.js` for local Node hosting
+- `api/*.mjs` for Vercel serverless hosting
+- `diagnostic_engine/runtime/runtime.js` for lazy service initialization
+- `diagnostic_engine/http/routes.js` for the actual HTTP behavior
 
 This split lets the same business logic run in two modes:
 
-- local mode: `node index.js`
-- hosted mode: Vercel invokes `api/[...route].js`
+- local mode: `node diagnostic_engine/runtime/index.js`
+- hosted mode: Vercel invokes the `api/*.mjs` shims
 
 In both cases, the handler uses the same service graph:
 
@@ -114,16 +115,18 @@ In both cases, the handler uses the same service graph:
 
 The mini MVP frontend is intentionally simple and static:
 
-- `public/index.html`
-- `public/app.js`
-- `public/styles.css`
+- `web/index.html`
+- `web/knee/index.html`
+- `web/home.js`
+- `web/app.js`
+- `web/styles.css`
 
 It does not contain clinical reasoning logic. It only:
 
-- submits the initial complaint
+- captures the homepage handoff and launches the knee workspace
 - renders follow-up questions
 - submits answers
-- shows candidates, fallback, or escalation
+- shows candidates in a structured popup, or renders fallback or escalation states
 - loads the ledger for inspection
 
 All reasoning stays server-side.
@@ -213,10 +216,12 @@ There are two core write operations:
 - `POST /api/session/start`
 - `POST /api/session/answer`
 
-There are two main read operations:
+For hosted deployments, the main read operations are:
 
-- `GET /api/session/:id`
-- `GET /api/session/:id/ledger`
+- `GET /api/session/get?sessionId=...`
+- `GET /api/session/ledger?sessionId=...`
+
+The shared handler also accepts `/session/:id` and `/session/:id/ledger` compatibility paths, and the local Node server accepts those directly.
 
 ### Start Session Flow
 
@@ -245,7 +250,7 @@ sequenceDiagram
         R-->>U: escalation result
     else Continue
         R->>Score: score candidates
-        alt Confident candidate exists
+        alt Completed question round plus presentable candidate
             R->>S: mark session complete
             R->>L: append candidate event
             R-->>U: ranked candidates
@@ -277,11 +282,13 @@ On `POST /api/session/answer`, the system:
 
 This is important: there is not a separate scoring path for initial text and question answers. The entire engine runs on one accumulated symptom state.
 
+The first pass after free-text intake can produce a strong internal shortlist, but the system still requires at least one completed follow-up round before it presents candidates to the user.
+
 ## Engine Modules In Detail
 
 ### Parser
 
-`engine/parser.js` converts raw text into bounded evidence.
+`diagnostic_engine/core/engine/parser.js` converts raw text into bounded evidence.
 
 It does this with:
 
@@ -297,7 +304,7 @@ This keeps the parser useful without letting it silently expand the domain.
 
 ### Safety Layer
 
-`engine/safety.js` runs before candidate ranking is allowed to finalize.
+`diagnostic_engine/core/engine/safety.js` runs before candidate ranking is allowed to finalize.
 
 It currently escalates for:
 
@@ -309,7 +316,7 @@ This logic is global on purpose. It does not belong to a single disease node bec
 
 ### Scorer
 
-`engine/scorer.js` evaluates every disease across three stages:
+`diagnostic_engine/core/engine/scorer.js` evaluates every disease across three stages:
 
 - acute
 - subacute
@@ -339,7 +346,7 @@ Candidate bands are then assigned:
 
 ### Question Selector
 
-`engine/selector.js` chooses the next best questions instead of asking everything.
+`diagnostic_engine/core/engine/selector.js` chooses the next best questions instead of asking everything.
 
 It scores each remaining question based on:
 
@@ -351,11 +358,13 @@ It scores each remaining question based on:
 - question `requires`, `ask_if`, and `blocks_if` conditions
 - whether the question helps discriminate among the live shortlist
 
-The system currently asks up to 3 questions per round.
+The system currently asks up to 4 questions in the first follow-up round and up to 3 in later rounds.
+
+That first round also acts as a presentation gate: the shortlist is not shown until at least one question round has been answered.
 
 ### Form Compiler
 
-`engine/compiler.js` turns selected questions into a client-friendly form payload.
+`diagnostic_engine/core/engine/compiler.js` turns selected questions into a client-friendly form payload.
 
 It also:
 
@@ -367,7 +376,7 @@ That means the UI can stay dumb and the server remains the source of truth for b
 
 ### Fallback
 
-`engine/fallback.js` handles the bounded exit path when the system cannot support a confident result.
+`diagnostic_engine/core/engine/fallback.js` handles the bounded exit path when the system cannot support a confident result.
 
 Fallback happens when:
 
@@ -382,10 +391,10 @@ The store layer exists so the same engine can run locally and in a hosted server
 
 ### Store Boundary
 
-`state/store.js` selects the backend based on config:
+`diagnostic_engine/storage/store.js` selects the backend based on config:
 
-- `file` -> `state/file-store.js`
-- `supabase` -> `state/supabase-store.js`
+- `file` -> `diagnostic_engine/storage/file-store.js`
+- `supabase` -> `diagnostic_engine/storage/supabase-store.js`
 
 The engine and route layer do not know which backend is active. They only call store methods such as:
 
@@ -429,10 +438,10 @@ This is a pragmatic MVP decision:
 ```mermaid
 flowchart TB
     Browser["Browser"] --> Vercel["Vercel"]
-    Vercel --> Static["Static assets from public/"]
-    Vercel --> Func["Serverless handler api/[...route].js"]
-    Func --> Runtime["lib/runtime.js"]
-    Runtime --> Routes["server/routes.js"]
+    Vercel --> Static["Static assets from web/ via api/web.mjs"]
+    Vercel --> Func["Serverless handlers in api/*.mjs"]
+    Func --> Runtime["diagnostic_engine/runtime/runtime.js"]
+    Runtime --> Routes["diagnostic_engine/http/routes.js"]
     Routes --> Engine["Engine modules"]
     Routes --> Supabase["Supabase tables"]
 ```
@@ -480,7 +489,7 @@ If the system expands, the safest extension paths are:
 - add more symptoms, questions, and disease nodes through the registry
 - add a second body part as a new registry scope
 - add richer analytics by reading the ledger
-- swap storage backends behind `state/store.js`
+- swap storage backends behind `diagnostic_engine/storage/store.js`
 - add a smarter parser without changing the scoring contracts
 - add authentication around the API without changing engine internals
 

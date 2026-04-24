@@ -2,10 +2,12 @@ import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
 
-export default async function answerSessionHandler(request, response) {
+export default async function webHandler(request, response) {
   try {
-    const { dispatchToHandler } = require("../../diagnostic_engine/runtime/vercel-dispatch.js");
-    return await dispatchToHandler(request, response, "/api/session/answer");
+    const { dispatchToHandler } = require("../diagnostic_engine/runtime/vercel-dispatch.js");
+    const requestUrl = new URL(request.url, "http://localhost");
+    const requestedPath = requestUrl.searchParams.get("path") || "/";
+    return await dispatchToHandler(request, response, requestedPath);
   } catch (error) {
     response.statusCode = 500;
     response.setHeader("access-control-allow-origin", "*");
@@ -14,7 +16,7 @@ export default async function answerSessionHandler(request, response) {
     response.end(
       JSON.stringify(
         {
-          error: error.message || "session answer handler startup failed"
+          error: error.message || "web handler startup failed"
         },
         null,
         2

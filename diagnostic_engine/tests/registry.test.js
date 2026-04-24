@@ -1,7 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { loadRegistry } = require("../registry/loader");
-const { validateRegistry } = require("../registry-validator/validate");
+const { loadRegistry } = require("../core/registry/loader");
+const { validateRegistry } = require("../core/registry/validate");
 
 test("registry validates successfully", () => {
   const registry = loadRegistry();

@@ -4,7 +4,7 @@ const require = createRequire(import.meta.url);
 
 export default async function startSessionHandler(request, response) {
   try {
-    const { dispatchToHandler } = require("../../lib/vercel-dispatch.js");
+    const { dispatchToHandler } = require("../../diagnostic_engine/runtime/vercel-dispatch.js");
     return await dispatchToHandler(request, response, "/api/session/start");
   } catch (error) {
     response.statusCode = 500;

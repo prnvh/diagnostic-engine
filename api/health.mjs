@@ -4,7 +4,7 @@ const require = createRequire(import.meta.url);
 
 export default async function healthHandler(request, response) {
   try {
-    const { dispatchToHandler } = require("../lib/vercel-dispatch.js");
+    const { dispatchToHandler } = require("../diagnostic_engine/runtime/vercel-dispatch.js");
     return await dispatchToHandler(request, response, "/api/health");
   } catch (error) {
     response.statusCode = 500;

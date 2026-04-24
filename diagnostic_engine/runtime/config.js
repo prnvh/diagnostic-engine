@@ -1,5 +1,6 @@
 const fs = require("node:fs");
 const path = require("node:path");
+const DEFAULT_OPENAI_MODEL = "gpt-5.2";
 
 function loadEnvFile(filePath = path.join(process.cwd(), ".env")) {
   if (!fs.existsSync(filePath)) {
@@ -54,14 +55,20 @@ function resolveStoreDriver(overrides = {}) {
 function buildConfig(overrides = {}) {
   const cwd = overrides.cwd || process.cwd();
   const dataDir = overrides.dataDir || process.env.DIAGNOSTIC_ENGINE_DATA_DIR || ".diagnostic-engine-data";
+  const webDir = overrides.webDir || process.env.DIAGNOSTIC_ENGINE_WEB_DIR || "web";
 
   return {
     cwd,
     port: toInteger(overrides.port || process.env.PORT, 3000),
-    maxRounds: toInteger(overrides.maxRounds || process.env.MAX_ROUNDS, 3),
+    maxRounds: toInteger(overrides.maxRounds || process.env.MAX_ROUNDS, 5),
+    minQuestionRoundsBeforeCandidates: toInteger(
+      overrides.minQuestionRoundsBeforeCandidates || process.env.MIN_QUESTION_ROUNDS_BEFORE_CANDIDATES,
+      3
+    ),
     sessionDebounceMs: toInteger(overrides.sessionDebounceMs || process.env.SESSION_DEBOUNCE_MS, 120000),
     storeDriver: resolveStoreDriver(overrides),
     dataDir: path.resolve(cwd, dataDir),
+    webDir: path.resolve(cwd, webDir),
     supabaseUrl: overrides.supabaseUrl || process.env.SUPABASE_URL || "",
     supabaseServiceRoleKey: overrides.supabaseServiceRoleKey || process.env.SUPABASE_SERVICE_ROLE_KEY || "",
     supabaseSchema: overrides.supabaseSchema || process.env.SUPABASE_SCHEMA || "public",
@@ -69,7 +76,7 @@ function buildConfig(overrides = {}) {
     supabaseLedgerTable:
       overrides.supabaseLedgerTable || process.env.SUPABASE_LEDGER_TABLE || "diagnostic_ledger_entries",
     openAiApiKey: overrides.openAiApiKey || process.env.OPENAI_API_KEY || "",
-    openAiModel: overrides.openAiModel || process.env.OPENAI_MODEL || ""
+    openAiModel: overrides.openAiModel || process.env.OPENAI_MODEL || DEFAULT_OPENAI_MODEL
   };
 }
 

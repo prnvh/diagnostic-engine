@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Knee Workspace | Diagnostic Engine</title>
+    <meta
+      name="description"
+      content="The dedicated knee workspace for the Diagnostic Engine MVP: structured triage, targeted follow-up, shortlist inspection, and session ledger."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="page-veil" aria-hidden="true"></div>
+
+    <div class="site-shell">
+      <header class="topbar">
+        <a class="brand" href="/">
+          <span class="brand-mark" aria-hidden="true">DE</span>
+          <span>Diagnostic Engine</span>
+        </a>
+
+        <nav class="topnav" aria-label="Primary">
+          <a href="/">Overview</a>
+          <a href="#workspace">Workspace</a>
+          <a href="#coverage">Coverage</a>
+        </nav>
+
+        <div class="scope-badge">Knee-only beta</div>
+      </header>
+
+      <main>
+        <section class="domain-hero surface">
+          <div class="domain-hero-grid">
+            <div class="domain-hero-copy">
+              <p class="eyebrow">Knee domain page</p>
+              <h1>The knee workspace for sessions, questions, and results.</h1>
+            </div>
+
+            <div class="domain-hero-side">
+              <p class="hero-text">
+                Start with a complaint, answer the next questions, and inspect the shortlist or safety path alongside the
+                session ledger.
+              </p>
+
+              <div class="hero-actions">
+                <a class="button primary" href="#workspace">Open the workspace</a>
+                <a class="button secondary" href="/">Back to overview</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="hero-facts">
+            <article class="fact-item">
+              <span class="fact-label">Live engine</span>
+              <strong>Structured session state</strong>
+              <p>Questions, shortlist, and result stay in view while the session updates.</p>
+            </article>
+
+            <article class="fact-item">
+              <span class="fact-label">Governance</span>
+              <strong>Append-only ledger</strong>
+              <p>Every material step can be reloaded and inspected from the same page.</p>
+            </article>
+
+            <article class="fact-item">
+              <span class="fact-label">Scope</span>
+              <strong>Knee-only reasoning</strong>
+              <p>Current modeled nodes are ACL tear, meniscal tear, PFPS, and knee osteoarthritis.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="workflow-section" id="workspace">
+          <div class="section-heading workflow-heading">
+            <p class="eyebrow">Guided workspace</p>
+            <h2>Start with the story. The engine then narrows into one form question at a time.</h2>
+            <p class="section-note">
+              The opening complaint is parsed into registry signals first. After that, the session moves into a short,
+              focused form flow before the shortlist is shown.
+            </p>
+          </div>
+
+          <div class="workflow-shell">
+            <aside class="workflow-rail surface">
+              <div class="rail-group">
+                <p class="mini-label">Progression</p>
+                <div class="stage-list" id="stage-list">
+                  <article class="stage-chip" data-stage-marker="intake">
+                    <span class="stage-chip-index">01</span>
+                    <div>
+                      <strong>Story intake</strong>
+                      <p>Describe the complaint in natural language.</p>
+                    </div>
+                  </article>
+
+                  <article class="stage-chip" data-stage-marker="forms">
+                    <span class="stage-chip-index">02</span>
+                    <div>
+                      <strong>Guided form</strong>
+                      <p>Confirm one high-value detail at a time.</p>
+                    </div>
+                  </article>
+
+                  <article class="stage-chip" data-stage-marker="outcome">
+                    <span class="stage-chip-index">03</span>
+                    <div>
+                      <strong>Shortlist outcome</strong>
+                      <p>Open the structured result when the form rounds are complete.</p>
+                    </div>
+                  </article>
+                </div>
+              </div>
+
+              <div class="rail-group">
+                <div class="panel-head rail-head">
+                  <div>
+                    <p class="mini-label">Session rail</p>
+                    <h3>Live state</h3>
+                  </div>
+
+                  <div class="rail-actions">
+                    <button class="ghost-button" id="load-ledger" type="button" disabled>Refresh ledger</button>
+                    <button class="ghost-button" id="reset-demo" type="button">Reset</button>
+                  </div>
+                </div>
+
+                <div class="rail-metrics" id="session-meta">
+                  <article class="rail-metric">
+                    <span class="rail-label">Session</span>
+                    <strong id="meta-session-id">Not started</strong>
+                  </article>
+
+                  <article class="rail-metric">
+                    <span class="rail-label">Status</span>
+                    <strong id="meta-status">Idle</strong>
+                  </article>
+
+                  <article class="rail-metric">
+                    <span class="rail-label">Answered</span>
+                    <strong id="meta-answered">0 of 3</strong>
+                  </article>
+
+                  <article class="rail-metric">
+                    <span class="rail-label">Engine round</span>
+                    <strong id="meta-round">0</strong>
+                  </article>
+                </div>
+              </div>
+
+              <div class="rail-group rail-card">
+                <div class="rail-card-head">
+                  <div>
+                    <p class="mini-label">Registry intake</p>
+                    <h3>Parsed opening story</h3>
+                  </div>
+                  <span class="parser-badge" id="intake-parser-mode">Waiting</span>
+                </div>
+
+                <p class="intake-summary" id="intake-summary">
+                  Describe the knee problem in natural language. The intake parser will map the story into registry
+                  signals before the guided form begins.
+                </p>
+
+                <p class="parser-warning" id="intake-warning" hidden></p>
+                <div class="signal-cloud empty-state" id="intake-signals">No mapped signals yet.</div>
+              </div>
+
+              <article class="rail-group shortlist-preview-card" id="candidate-preview-card" hidden>
+                <div class="rail-card-head">
+                  <div>
+                    <p class="mini-label">Shortlist ready</p>
+                    <h3>Reopen the candidate view</h3>
+                  </div>
+                </div>
+
+                <p id="candidate-preview-message">
+                  The structured shortlist is ready. Open the focused popup to inspect the final candidate set.
+                </p>
+                <button class="button primary wide" id="reopen-shortlist" type="button">Open structured shortlist</button>
+              </article>
+
+              <div class="status-banner" id="status-banner" hidden></div>
+            </aside>
+
+            <div class="workflow-main">
+              <section class="workflow-card intake-stage surface" id="intake-stage">
+                <div class="panel-head stage-head">
+                  <div>
+                    <p class="mini-label">Story intake</p>
+                    <h3>Describe what happened in your own words</h3>
+                  </div>
+                </div>
+
+                <p class="stage-copy">
+                  Start with free text. The engine will first parse that story into symptom-registry evidence, then it
+                  will transition into a short form flow that asks only one question at a time.
+                </p>
+
+                <form id="start-form" class="intake-form">
+                  <input id="patient-id" name="patientId" type="hidden" />
+
+                  <label class="field">
+                    <span>Opening complaint</span>
+                    <textarea
+                      class="knee-textarea"
+                      id="complaint-text"
+                      name="text"
+                      rows="7"
+                      placeholder="Example: I twisted my knee playing football, felt a pop, it swelled that evening, and now it gives way."
+                      required
+                    ></textarea>
+                  </label>
+
+                  <div class="sample-row">
+                    <button class="sample-button" type="button" data-sample="acl">Twist and pop</button>
+                    <button class="sample-button" type="button" data-sample="meniscus">Catch and turn</button>
+                    <button class="sample-button" type="button" data-sample="pfps">Front pain</button>
+                    <button class="sample-button" type="button" data-sample="oa">Months of ache</button>
+                    <button class="sample-button" type="button" data-sample="redflag">Hot red knee</button>
+                    <button class="sample-button" type="button" data-sample="trauma">Major fall</button>
+                  </div>
+
+                  <div class="intake-actions">
+                    <div class="workspace-note">
+                      Knee-only scope for this build. The result is a fit score, fallback, or escalation, not a medical
+                      diagnosis.
+                    </div>
+
+                    <button class="button primary" id="start-button" type="submit">Begin guided form</button>
+                  </div>
+                </form>
+              </section>
+
+              <section class="workflow-card interview-stage surface" id="interview-stage" hidden>
+                <div class="panel-head stage-head">
+                  <div>
+                    <p class="mini-label">Guided form</p>
+                    <h3>One focused question at a time</h3>
+                  </div>
+
+                  <div class="question-progress" id="question-progress">Waiting for the first form prompt.</div>
+                </div>
+
+                <div class="interview-layout">
+                  <div class="interview-context">
+                    <article class="context-card">
+                      <span class="note-label">Form context</span>
+                      <p class="question-message" id="question-message">
+                        The opening story has been mapped. The next question will confirm the highest-value detail.
+                      </p>
+                    </article>
+
+                    <article class="context-card" id="question-note-card" hidden>
+                      <span class="note-label">Clarification note</span>
+                      <p class="question-note" id="question-note"></p>
+                    </article>
+                  </div>
+
+                  <form id="question-form" class="question-stage-form"></form>
+                </div>
+              </section>
+
+              <section class="workflow-card result-stage surface" id="result-stage" hidden>
+                <div class="panel-head stage-head">
+                  <div>
+                    <p class="mini-label">Outcome</p>
+                    <h3>Session outcome</h3>
+                  </div>
+
+                  <span class="result-chip" id="result-chip">Waiting</span>
+                </div>
+
+                <div id="result-body" class="result-body empty-state">No result yet.</div>
+              </section>
+            </div>
+          </div>
+
+          <div class="review-grid">
+            <section class="review-card surface">
+              <div class="panel-head">
+                <div>
+                  <p class="mini-label">Shortlist state</p>
+                  <h3>What appears after the form rounds</h3>
+                </div>
+              </div>
+
+              <div id="candidate-debug" class="candidate-state-panel empty-state">
+                The shortlist stays hidden until the guided form rounds are complete.
+              </div>
+            </section>
+
+            <section class="review-card review-card-wide surface">
+              <div class="panel-head">
+                <div>
+                  <p class="mini-label">Governance</p>
+                  <h3>Ledger</h3>
+                </div>
+              </div>
+
+              <div id="ledger-output" class="ledger-list empty-state">Ledger not loaded.</div>
+            </section>
+          </div>
+        </section>
+
+        <section class="coverage-section" id="coverage">
+          <div class="section-heading coverage-heading">
+            <p class="eyebrow">Current scope</p>
+            <h2>The current registry covers four knee conditions plus a safety escalation layer.</h2>
+            <p class="section-note">
+              The page is tuned for a focused knee intake flow: free-text opening story, one-question form rounds, and a
+              structured shortlist only after enough evidence has been earned.
+            </p>
+          </div>
+
+          <div class="coverage-band-grid">
+            <article class="coverage-band-card surface">
+              <p class="note-label">Modeled nodes</p>
+              <h3>What the engine reasons about today</h3>
+
+              <div class="coverage-list">
+                <article class="coverage-item">
+                  <strong>ACL tear</strong>
+                  <p>Pivot injury, pop, rapid swelling, instability, and trust loss in sport-like movement.</p>
+                </article>
+
+                <article class="coverage-item">
+                  <strong>Meniscal tear</strong>
+                  <p>Inner or outer joint-line pain, catching or locking, twisting history, and range-of-motion loss.</p>
+                </article>
+
+                <article class="coverage-item">
+                  <strong>Patellofemoral pain syndrome</strong>
+                  <p>Front-of-knee pain, stairs, squatting, sitting with the knee bent, and activity-related pain.</p>
+                </article>
+
+                <article class="coverage-item">
+                  <strong>Knee osteoarthritis</strong>
+                  <p>Longer timeline, stiffness after rest, crepitus, walking discomfort, and load-related symptoms.</p>
+                </article>
+              </div>
+            </article>
+
+            <article class="coverage-band-card surface">
+              <p class="note-label">Interpretation</p>
+              <h3>How to read the outcome</h3>
+
+              <div class="coverage-list">
+                <article class="coverage-item">
+                  <strong>Fit score, not diagnosis</strong>
+                  <p>The shortlist ranks the best registry fits from the evidence gathered so far.</p>
+                </article>
+
+                <article class="coverage-item">
+                  <strong>Fallback means bounded confidence</strong>
+                  <p>If confidence is not earned, the engine stops rather than pretending certainty it does not have.</p>
+                </article>
+
+                <article class="coverage-item">
+                  <strong>Safety overrides ranking</strong>
+                  <p>Hot red knee, fever, major trauma, deformity, and similar patterns trigger the safety path first.</p>
+                </article>
+
+                <article class="coverage-item">
+                  <strong>Ledger stays inspectable</strong>
+                  <p>Every major session event can be refreshed and reviewed from the same page.</p>
+                </article>
+              </div>
+            </article>
+          </div>
+        </section>
+      </main>
+
+      <footer class="site-footer surface">
+        <strong>Diagnostic Engine</strong>
+        <p>
+          The dedicated knee workspace for structured triage, targeted follow-up, and inspectable session state. It is not
+          a diagnosis and should not replace urgent medical care.
+        </p>
+      </footer>
+    </div>
+
+    <div class="candidate-modal-shell" id="candidate-modal" hidden aria-hidden="true">
+      <div class="candidate-modal-backdrop" data-close-candidate-modal="true"></div>
+
+      <section class="candidate-modal surface" role="dialog" aria-modal="true" aria-labelledby="candidate-modal-title">
+        <div class="candidate-modal-head">
+          <div>
+            <p class="mini-label">Structured shortlist</p>
+            <h3 id="candidate-modal-title">Top candidates</h3>
+          </div>
+
+          <button class="ghost-button modal-close" id="candidate-modal-close" type="button" data-close-candidate-modal="true">
+            Close
+          </button>
+        </div>
+
+        <p class="candidate-modal-message" id="candidate-modal-message"></p>
+        <div class="candidate-modal-meta" id="candidate-modal-meta"></div>
+        <div class="candidate-modal-list" id="candidate-modal-list"></div>
+      </section>
+    </div>
+
+    <script src="/app.js" defer></script>
+  </body>
+</html>

@@ -1,7 +1,7 @@
-const { buildConfig, loadEnvFile } = require("./lib/config");
-const { createServer, createServices } = require("./server/routes");
-const { loadRegistry } = require("./registry/loader");
-const { loadAndValidateRegistry } = require("./registry-validator/validate");
+const { buildConfig, loadEnvFile } = require("./config");
+const { createServer, createServices } = require("../http/routes");
+const { loadRegistry } = require("../core/registry/loader");
+const { loadAndValidateRegistry } = require("../core/registry/validate");
 
 async function main() {
   loadEnvFile();

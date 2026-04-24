@@ -45,6 +45,10 @@ body {
   line-height: 1.72;
 }
 
+body.modal-open {
+  overflow: hidden;
+}
+
 .page-veil {
   position: fixed;
   inset: 0;
@@ -960,6 +964,11 @@ textarea {
   color: var(--danger);
 }
 
+.status-banner[data-tone="success"] {
+  background: rgba(37, 69, 61, 0.16);
+  color: var(--accent);
+}
+
 .result-body,
 .candidate-list,
 .ledger-list {
@@ -969,6 +978,40 @@ textarea {
 .result-body {
   display: grid;
   gap: 1rem;
+}
+
+.result-summary-card,
+.candidate-modal-meta-item,
+.candidate-modal-detail,
+.shortlist-note {
+  border: 1px solid rgba(31, 33, 27, 0.08);
+  border-radius: var(--radius-md);
+  background: rgba(250, 245, 238, 0.72);
+}
+
+.result-summary-card,
+.candidate-modal-meta-item,
+.candidate-modal-detail {
+  padding: 1.1rem;
+}
+
+.result-summary-actions {
+  display: grid;
+  gap: 0.85rem;
+  align-items: start;
+}
+
+.result-summary-note,
+.candidate-modal-message,
+.candidate-modal-card-copy p,
+.candidate-modal-detail p,
+.shortlist-note p {
+  color: var(--muted);
+}
+
+.shortlist-note strong {
+  display: block;
+  margin-bottom: 0.4rem;
 }
 
 .candidate-card.emphasis {
@@ -1021,6 +1064,115 @@ textarea {
   color: var(--muted);
 }
 
+.candidate-modal-shell {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 1.2rem;
+}
+
+.candidate-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(23, 25, 21, 0.42);
+  backdrop-filter: blur(8px);
+}
+
+.candidate-modal {
+  position: relative;
+  z-index: 1;
+  width: min(880px, 100%);
+  max-height: min(88vh, 940px);
+  overflow-y: auto;
+  padding: 1.35rem;
+  background: rgba(255, 252, 247, 0.97);
+}
+
+.candidate-modal-head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.9rem;
+}
+
+.modal-close {
+  white-space: nowrap;
+}
+
+.candidate-modal-message {
+  margin-bottom: 1rem;
+}
+
+.candidate-modal-meta,
+.candidate-modal-list,
+.candidate-modal-detail-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.candidate-modal-meta {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-bottom: 1rem;
+}
+
+.candidate-modal-meta-item span,
+.candidate-modal-detail span {
+  display: inline-flex;
+  margin-bottom: 0.45rem;
+  color: var(--sand);
+  font-family: var(--meta);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.candidate-modal-meta-item strong,
+.candidate-modal-card strong {
+  color: var(--text);
+}
+
+.candidate-modal-card {
+  padding: 1.2rem;
+  border: 1px solid rgba(31, 33, 27, 0.08);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(180deg, rgba(255, 252, 247, 0.96), rgba(241, 236, 228, 0.88));
+}
+
+.candidate-modal-card-head {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 1rem;
+  align-items: center;
+}
+
+.candidate-modal-card-copy {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.candidate-rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 999px;
+  border: 1px solid rgba(37, 69, 61, 0.14);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-family: var(--meta);
+  font-size: 0.88rem;
+  letter-spacing: 0.08em;
+}
+
+.candidate-modal-detail-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 1rem;
+}
+
 .site-footer {
   display: grid;
   gap: 0.65rem;
@@ -1047,7 +1199,9 @@ button:disabled {
   .hero-facts,
   .coverage-grid,
   .insight-grid,
-  .atlas-summary {
+  .atlas-summary,
+  .candidate-modal-meta,
+  .candidate-modal-detail-grid {
     grid-template-columns: 1fr;
   }
 
@@ -1111,6 +1265,10 @@ button:disabled {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .candidate-modal-card-head {
+    grid-template-columns: 1fr;
+  }
+
   .atlas-figure-shell {
     min-height: 31rem;
   }
@@ -1134,7 +1292,8 @@ button:disabled {
   .panel-head,
   .question-head,
   .candidate-head,
-  .ledger-head {
+  .ledger-head,
+  .candidate-modal-head {
     display: grid;
   }
 
@@ -1147,7 +1306,9 @@ button:disabled {
 
   .hero-facts,
   .meta-grid,
-  .atlas-steps {
+  .atlas-steps,
+  .candidate-modal-meta,
+  .candidate-modal-detail-grid {
     grid-template-columns: 1fr;
   }
 
@@ -1164,5 +1325,512 @@ button:disabled {
   .atlas-figure-caption {
     width: calc(100% - 2rem);
     white-space: normal;
+  }
+}
+
+.workflow-section {
+  display: grid;
+  gap: 1.6rem;
+}
+
+.workflow-heading {
+  max-width: 74rem;
+}
+
+.workflow-shell {
+  display: grid;
+  grid-template-columns: minmax(21rem, 0.78fr) minmax(0, 1.22fr);
+  gap: 1.15rem;
+  align-items: start;
+}
+
+.workflow-rail {
+  position: sticky;
+  top: 6.2rem;
+  display: grid;
+  gap: 1rem;
+  padding: 1.2rem;
+}
+
+.workflow-main {
+  display: grid;
+  gap: 1rem;
+}
+
+.workflow-card,
+.coverage-band-card,
+.review-card {
+  padding: 1.35rem;
+}
+
+.rail-group {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.rail-card,
+.context-card,
+.question-panel,
+.candidate-state-card,
+.candidate-state-note,
+.coverage-item,
+.outcome-summary-card {
+  border: 1px solid rgba(31, 33, 27, 0.08);
+  border-radius: var(--radius-md);
+  background: linear-gradient(180deg, rgba(255, 252, 247, 0.96), rgba(244, 238, 229, 0.78));
+}
+
+.rail-card,
+.context-card,
+.question-panel,
+.candidate-state-card,
+.candidate-state-note,
+.coverage-item,
+.outcome-summary-card {
+  padding: 1rem;
+}
+
+.stage-list,
+.rail-metrics,
+.candidate-state-list,
+.coverage-list {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.stage-chip {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.9rem;
+  align-items: start;
+  padding: 0.95rem 1rem;
+  border: 1px solid rgba(31, 33, 27, 0.08);
+  border-radius: var(--radius-md);
+  background: rgba(250, 245, 238, 0.74);
+  transition: border-color 140ms ease, background 140ms ease, transform 140ms ease;
+}
+
+.stage-chip[data-state="active"] {
+  border-color: rgba(37, 69, 61, 0.18);
+  background: linear-gradient(180deg, rgba(239, 245, 241, 0.92), rgba(251, 247, 241, 0.92));
+  transform: translateY(-1px);
+}
+
+.stage-chip[data-state="complete"] {
+  border-color: rgba(139, 98, 66, 0.16);
+  background: rgba(248, 241, 233, 0.92);
+}
+
+.stage-chip-index,
+.candidate-state-rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.5rem;
+  height: 2.5rem;
+  padding: 0 0.55rem;
+  border-radius: 999px;
+  border: 1px solid rgba(37, 69, 61, 0.12);
+  background: rgba(255, 252, 247, 0.92);
+  color: var(--accent);
+  font-family: var(--meta);
+  font-size: 0.76rem;
+  letter-spacing: 0.08em;
+}
+
+.stage-chip strong,
+.rail-metric strong,
+.coverage-item strong,
+.outcome-meta-item strong,
+.candidate-state-card strong {
+  display: block;
+  color: var(--text);
+}
+
+.stage-chip p,
+.candidate-state-card p {
+  margin-top: 0.2rem;
+}
+
+.rail-head {
+  align-items: center;
+}
+
+.rail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  justify-content: flex-end;
+}
+
+.rail-metrics {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.rail-metric {
+  padding: 0.9rem 0.95rem;
+  border: 1px solid rgba(31, 33, 27, 0.08);
+  border-radius: var(--radius-md);
+  background: rgba(250, 245, 238, 0.72);
+}
+
+.rail-label,
+.parser-badge,
+.result-chip,
+.question-progress,
+.result-kicker,
+.outcome-meta-item span,
+.micro-label {
+  font-family: var(--meta);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.rail-label,
+.micro-label {
+  color: var(--muted);
+}
+
+.rail-card-head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.parser-badge,
+.result-chip,
+.question-progress {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.3rem;
+  padding: 0.55rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid rgba(31, 33, 27, 0.08);
+  background: rgba(255, 252, 247, 0.9);
+  color: var(--accent);
+}
+
+.parser-badge[data-mode="rule_fallback"] {
+  color: #785230;
+  background: rgba(139, 98, 66, 0.12);
+}
+
+.result-chip[data-tone="success"] {
+  color: var(--accent);
+  background: rgba(37, 69, 61, 0.12);
+}
+
+.result-chip[data-tone="warning"] {
+  color: #785230;
+  background: rgba(139, 98, 66, 0.12);
+}
+
+.result-chip[data-tone="danger"] {
+  color: var(--danger);
+  background: rgba(146, 72, 58, 0.12);
+}
+
+.intake-summary,
+.stage-copy {
+  max-width: 52rem;
+}
+
+.parser-warning {
+  color: #785230;
+  font-size: 0.96rem;
+  line-height: 1.55;
+}
+
+.signal-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.signal-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.58rem 0.82rem;
+  border-radius: 999px;
+  border: 1px solid rgba(37, 69, 61, 0.12);
+  background: rgba(37, 69, 61, 0.08);
+  color: var(--accent);
+  font-size: 0.95rem;
+  line-height: 1.2;
+}
+
+.shortlist-preview-card {
+  gap: 0.8rem;
+}
+
+.intake-form,
+.interview-layout,
+.question-stage-form,
+.outcome-meta-grid,
+.review-grid,
+.coverage-band-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.intake-form {
+  gap: 1.1rem;
+}
+
+.intake-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: end;
+}
+
+.interview-layout {
+  grid-template-columns: minmax(15rem, 0.72fr) minmax(0, 1.28fr);
+  align-items: start;
+}
+
+.interview-context {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.question-stage-form {
+  align-content: start;
+}
+
+.question-panel {
+  padding: 1.15rem;
+}
+
+.question-panel-head {
+  display: grid;
+  gap: 0.65rem;
+  margin-bottom: 1rem;
+}
+
+.question-phase-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  padding: 0.48rem 0.78rem;
+  border-radius: 999px;
+  background: rgba(139, 98, 66, 0.1);
+  color: var(--sand);
+  font-family: var(--meta);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.question-title {
+  margin: 0;
+  color: var(--text);
+  font-family: var(--body);
+  font-size: clamp(1.45rem, 2vw, 1.95rem);
+  font-weight: 700;
+  line-height: 1.18;
+  letter-spacing: -0.02em;
+}
+
+.question-caption {
+  max-width: 40rem;
+}
+
+.question-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.choice-group,
+.scale-choice-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+}
+
+.scale-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.question-panel .choice-chip span {
+  min-height: 3.45rem;
+  background: rgba(255, 253, 249, 0.96);
+}
+
+.scale-chip span {
+  display: grid;
+  justify-items: start;
+  gap: 0.12rem;
+  width: 100%;
+}
+
+.scale-chip strong {
+  color: var(--text);
+  font-family: var(--meta);
+  font-size: 0.96rem;
+}
+
+.scale-chip small {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.outcome-summary-card {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.outcome-success {
+  background: linear-gradient(180deg, rgba(239, 245, 241, 0.92), rgba(251, 247, 241, 0.94));
+}
+
+.outcome-warning {
+  background: linear-gradient(180deg, rgba(248, 240, 231, 0.92), rgba(251, 247, 241, 0.94));
+}
+
+.outcome-danger {
+  background: linear-gradient(180deg, rgba(248, 236, 233, 0.94), rgba(251, 247, 241, 0.94));
+}
+
+.result-kicker {
+  color: var(--sand);
+}
+
+.outcome-meta-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.outcome-meta-item {
+  padding: 0.85rem 0.9rem;
+  border: 1px solid rgba(31, 33, 27, 0.08);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 252, 247, 0.74);
+}
+
+.review-grid {
+  grid-template-columns: minmax(18rem, 0.82fr) minmax(0, 1.18fr);
+}
+
+.review-card-wide {
+  min-width: 0;
+}
+
+.candidate-state-panel,
+.candidate-state-panel.empty-state {
+  min-height: 100%;
+}
+
+.candidate-state-list {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.candidate-state-card {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.candidate-state-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.candidate-state-head > div {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.candidate-state-note strong {
+  display: block;
+  margin-bottom: 0.45rem;
+}
+
+.candidate-state-panel-warning .candidate-state-note {
+  background: rgba(139, 98, 66, 0.1);
+}
+
+.candidate-state-panel-danger .candidate-state-note {
+  background: rgba(146, 72, 58, 0.1);
+}
+
+.coverage-heading {
+  max-width: 74rem;
+}
+
+.coverage-band-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.coverage-band-card {
+  display: grid;
+  gap: 1rem;
+}
+
+.coverage-item {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.candidate-modal {
+  background: linear-gradient(180deg, rgba(255, 252, 247, 0.98), rgba(243, 238, 229, 0.94));
+}
+
+@media (max-width: 1220px) {
+  .workflow-shell,
+  .interview-layout,
+  .review-grid,
+  .coverage-band-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .workflow-rail {
+    position: static;
+  }
+}
+
+@media (max-width: 920px) {
+  .workflow-card,
+  .coverage-band-card,
+  .review-card {
+    padding: 1.2rem;
+  }
+
+  .rail-metrics,
+  .candidate-state-list,
+  .outcome-meta-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .scale-choice-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .workflow-rail {
+    padding: 1rem;
+  }
+
+  .stage-chip,
+  .rail-head,
+  .rail-actions,
+  .candidate-state-head,
+  .intake-actions {
+    display: grid;
+  }
+
+  .intake-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .scale-choice-grid {
+    grid-template-columns: 1fr;
   }
 }

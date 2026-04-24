@@ -1,5 +1,5 @@
 const { getServices } = require("./runtime");
-const { createRequestHandler } = require("../server/routes");
+const { createRequestHandler } = require("../http/routes");
 
 let handlerPromise = null;
 

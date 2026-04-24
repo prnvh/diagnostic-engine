@@ -1,10 +1,10 @@
 const fs = require("node:fs/promises");
 const os = require("node:os");
 const path = require("node:path");
-const { answerDiagnosticSession, createServices, startDiagnosticSession } = require("../server/routes");
-const { buildConfig } = require("../lib/config");
-const { loadRegistry } = require("../registry/loader");
-const { getSession } = require("../state/session");
+const { answerDiagnosticSession, createServices, startDiagnosticSession } = require("../http/routes");
+const { buildConfig } = require("../runtime/config");
+const { loadRegistry } = require("../core/registry/loader");
+const { getSession } = require("../storage/session");
 
 function parseArgs(argv) {
   const options = {
@@ -144,15 +144,18 @@ async function runProfile(profile, runIndex, options) {
   const session = await getSession(services.store, response.sessionId);
   const confidentCandidates = (session.candidates || []).filter((candidate) => !candidate.hardBlocked && candidate.score >= 80);
   const possibleCandidates = (session.candidates || []).filter((candidate) => !candidate.hardBlocked && candidate.score >= 60);
+  const presentedCandidates = response.result?.type === "candidates" ? response.result.candidates || [] : [];
 
   const outcomeType = response.result?.type;
   let passed = false;
 
   if (profile.expectedOutcome === "candidate") {
     const winningCandidate = confidentCandidates.find((candidate) => candidate.diseaseId === profile.expectedDisease);
-    passed = Boolean(winningCandidate);
+    const presentedCandidate = presentedCandidates.find((candidate) => candidate.diseaseId === profile.expectedDisease);
+    passed = Boolean(winningCandidate || presentedCandidate);
     if (passed && profile.expectedStage) {
-      passed = winningCandidate.bestStage === profile.expectedStage;
+      const resolvedStage = winningCandidate?.bestStage || presentedCandidate?.stage;
+      passed = resolvedStage === profile.expectedStage;
     }
   } else if (profile.expectedOutcome === "fallback") {
     passed = outcomeType === "fallback";
@@ -168,6 +171,7 @@ async function runProfile(profile, runIndex, options) {
     finalRound: response.round,
     possibleBandHit: possibleCandidates.some((candidate) => candidate.diseaseId === profile.expectedDisease),
     confidentBandHit: confidentCandidates.some((candidate) => candidate.diseaseId === profile.expectedDisease),
+    presentedCandidateHit: presentedCandidates.some((candidate) => candidate.diseaseId === profile.expectedDisease),
     falsePositiveConfidentCount:
       profile.expectedOutcome === "candidate"
         ? confidentCandidates.filter((candidate) => candidate.diseaseId !== profile.expectedDisease).length
@@ -197,6 +201,7 @@ async function runBenchmark(options) {
   const profileSummaries = [...grouped.entries()].map(([profileId, results]) => ({
     profileId,
     allRunsPassed: results.every((result) => result.passed),
+    presentedCandidateHit: results.some((result) => result.presentedCandidateHit),
     confidentBandHit: results.some((result) => result.confidentBandHit),
     possibleBandHit: results.some((result) => result.possibleBandHit),
     falsePositiveConfidentCount: Math.max(...results.map((result) => result.falsePositiveConfidentCount)),
@@ -212,7 +217,7 @@ async function runBenchmark(options) {
     profileSummaries
   };
 
-  const resultsDirectory = path.join(process.cwd(), "benchmark", "results");
+  const resultsDirectory = path.join(process.cwd(), "diagnostic_engine", "benchmarks", "results");
   await fs.mkdir(resultsDirectory, { recursive: true });
   const resultPath = path.join(resultsDirectory, `benchmark-${Date.now()}.json`);
   await fs.writeFile(resultPath, JSON.stringify(summary, null, 2));

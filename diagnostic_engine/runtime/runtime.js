@@ -1,7 +1,7 @@
 const { buildConfig, loadEnvFile } = require("./config");
-const { loadRegistry } = require("../registry/loader");
-const { loadAndValidateRegistry } = require("../registry-validator/validate");
-const { createServices } = require("../server/routes");
+const { loadRegistry } = require("../core/registry/loader");
+const { loadAndValidateRegistry } = require("../core/registry/validate");
+const { createServices } = require("../http/routes");
 
 let servicesPromise = null;
 

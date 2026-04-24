@@ -1,5 +1,4 @@
-const path = require("node:path");
-const { loadRegistry } = require("../registry/loader");
+const { loadRegistry } = require("./loader");
 
 const STAGES = ["acute", "subacute", "chronic"];
 const QUESTION_TYPES = new Set(["boolean", "single_select", "multi_select", "scale_0_5"]);
@@ -167,7 +166,7 @@ function validateRegistry(registry) {
   };
 }
 
-function loadAndValidateRegistry(registryDir = path.join(__dirname, "..", "registry")) {
+function loadAndValidateRegistry(registryDir = __dirname) {
   const registry = loadRegistry(registryDir);
   return validateRegistry(registry);
 }

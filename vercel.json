@@ -2,11 +2,11 @@
   "functions": {
     "api/*.mjs": {
       "maxDuration": 10,
-      "includeFiles": "{lib,registry,registry-validator,server,state,engine}/**/*"
+      "includeFiles": "{diagnostic_engine,web}/**/*"
     },
     "api/**/*.mjs": {
       "maxDuration": 10,
-      "includeFiles": "{lib,registry,registry-validator,server,state,engine}/**/*"
+      "includeFiles": "{diagnostic_engine,web}/**/*"
     }
   },
   "rewrites": [
@@ -29,6 +29,14 @@
     {
       "source": "/session/([^/]+)",
       "destination": "/api/session/get?sessionId=$1"
+    },
+    {
+      "source": "/",
+      "destination": "/api/web?path=/"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/api/web?path=/$1"
     }
   ]
 }

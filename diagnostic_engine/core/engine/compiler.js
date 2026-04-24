@@ -13,11 +13,12 @@ function compileQuestionForm({ questions, symptomState, registry }) {
   }
 
   const messageLines = [
-    "Answer each question using the clearest option you can. For 0-5 scales: 0 means none, 5 means the symptom is dominant or severe."
+    "The opening story has been mapped into the symptom registry. Answer the next form question as directly as you can.",
+    "For 0-5 scales: 0 means none and 5 means the symptom is dominant or severe."
   ];
 
   if (clarificationNotes.length > 0) {
-    messageLines.push("Clarify any symptoms you only hinted at earlier.");
+    messageLines.push("This question is also checking any signals that were only tentative in the original story.");
   }
 
   const compiledQuestions = questions.map((question) => ({

@@ -1,9 +1,9 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { loadRegistry } = require("../registry/loader");
-const { scoreCandidates } = require("../engine/scorer");
-const { selectQuestions } = require("../engine/selector");
-const { compileQuestionForm } = require("../engine/compiler");
+const { loadRegistry } = require("../core/registry/loader");
+const { scoreCandidates } = require("../core/engine/scorer");
+const { selectQuestions } = require("../core/engine/selector");
+const { compileQuestionForm } = require("../core/engine/compiler");
 
 const registry = loadRegistry();
 
@@ -27,6 +27,41 @@ test("selector chooses unresolved ACL-focused questions", () => {
   });
 
   assert.ok(questions.some((question) => question.id === "knee_q_103_swelling_timing" || question.id === "knee_q_105_buckling_turning" || question.id === "knee_q_106_return_to_sport"));
+});
+
+test("selector can require explicit confirmation for inferred first-round evidence", () => {
+  const symptomState = {
+    injury_related_start: { value: true, status: "inferred" },
+    sudden_onset: { value: true, status: "inferred" },
+    pop_at_injury: { value: true, status: "inferred" },
+    rapid_swelling_within_24h: { value: true, status: "inferred" },
+    instability_giving_way: { value: 4, status: "inferred" }
+  };
+
+  const { candidates } = scoreCandidates(registry, symptomState);
+  const questions = selectQuestions({
+    registry,
+    symptomState,
+    candidates,
+    questionLog: [],
+    round: 1,
+    limit: 3,
+    requireExplicitConfirmation: true
+  });
+
+  assert.ok(
+    questions.some((question) =>
+      question.maps_to.some((symptomId) =>
+        [
+          "injury_related_start",
+          "sudden_onset",
+          "pop_at_injury",
+          "rapid_swelling_within_24h",
+          "instability_giving_way"
+        ].includes(symptomId)
+      )
+    )
+  );
 });
 
 test("compiler adds clarification note for low-confidence symptoms", () => {

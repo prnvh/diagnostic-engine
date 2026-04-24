@@ -1,7 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { loadRegistry } = require("../registry/loader");
-const { scoreCandidates } = require("../engine/scorer");
+const { loadRegistry } = require("../core/registry/loader");
+const { scoreCandidates } = require("../core/engine/scorer");
 
 const registry = loadRegistry();
 
