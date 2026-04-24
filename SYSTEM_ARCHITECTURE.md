@@ -1,57 +1,111 @@
 # System Architecture
 
-This document explains what the diagnostic engine is, what parts it is made of, and how a request moves through the system from raw complaint text to a bounded result.
+This document describes the current architecture of the Diagnostic Engine repo as it exists today: a knee-only, registry-driven reasoning service with a static web UI, deterministic scoring, optional LLM-assisted intake parsing, and persistent session state.
 
 ## What This System Is
 
-The diagnostic engine is a deterministic, registry-driven symptom reasoning service for knee complaints.
+The system is a bounded symptom-reasoning engine for knee complaints.
 
-It is designed as a mini MVP demo, not as a medical diagnosis system. Its job is to:
+It is not a diagnosis system. Its job is to:
 
-- take an initial free-text complaint
+- accept an opening complaint in free text
 - convert that complaint into controlled symptom evidence
-- score a small set of structured disease nodes
-- ask the next best follow-up questions
-- require at least one completed follow-up round before showing a shortlist
-- escalate when red-flag patterns appear
-- stop with a cautious fallback when the evidence is not strong enough
+- store the evolving interview as a reusable session
+- ask one high-value follow-up question at a time
+- stop with one of three bounded outcomes:
+  - shortlist of top candidates
+  - fallback when evidence is still not decisive
+  - escalation when safety rules trigger
 
-The current disease scope is intentionally narrow:
+Current modeled conditions:
 
 - ACL tear
 - Meniscal tear
 - Patellofemoral pain syndrome
 - Knee osteoarthritis
 
-## Core Design Philosophy
+## Core Principles
 
-The system is built around a few hard rules:
+- Registry-first: medical reasoning lives in JSON registries, not in UI text.
+- Deterministic scoring: given the same symptom state, the scorer and selector return the same result.
+- Controlled evidence: all downstream logic runs on symptom keys, not raw complaint text.
+- Safety first: red-flag triage can interrupt the normal candidate flow.
+- Auditable state: sessions and ledger entries are persisted.
+- Deploy-once architecture: the same engine works locally and on Vercel.
 
-- Registry-first, not prompt-first: all medical reasoning is grounded in explicit JSON registries.
-- Deterministic behavior: the same evidence should produce the same scores and next questions.
-- Bounded evidence: unknown facts stay unknown instead of being silently assumed false.
-- Safety before ranking: red flags can interrupt normal candidate scoring.
-- Auditable state: every session has persistent state plus an append-only ledger.
-- Deployable MVP shape: the same engine works locally and on Vercel.
+## Repo Shape
+
+```text
+diagnostic_engine/
+  core/
+    engine/
+      compiler.js
+      fallback.js
+      intake-parser.js
+      parser.js
+      safety.js
+      scorer.js
+      selector.js
+    registry/
+      diseases/knee/*.json
+      questions/knee.json
+      symptoms/knee.json
+      loader.js
+      validate.js
+  http/
+    routes.js
+  runtime/
+    config.js
+    index.js
+    runtime.js
+    vercel-dispatch.js
+  storage/
+    file-store.js
+    ledger.js
+    session.js
+    store.js
+    supabase-store.js
+  supabase/
+    migrations/0001_diagnostic_mvp.sql
+  benchmarks/
+    harness.js
+    profiles/
+    results/
+  tests/
+
+api/
+  health.mjs
+  web.mjs
+  session/*.mjs
+
+web/
+  index.html
+  home.js
+  knee/index.html
+  app.js
+  styles.css
+```
 
 ## Top-Level Architecture
 
 ```mermaid
 flowchart LR
-    User["User"] --> UI["Static Demo UI<br/>web/index.html + web/home.js<br/>web/knee/index.html + web/app.js"]
-    UI --> API["HTTP Layer<br/>diagnostic_engine/http/routes.js"]
-    API --> Parser["Parser<br/>diagnostic_engine/core/engine/parser.js"]
-    API --> Safety["Safety Rules<br/>diagnostic_engine/core/engine/safety.js"]
-    API --> Scorer["Candidate Scorer<br/>diagnostic_engine/core/engine/scorer.js"]
-    API --> Selector["Question Selector<br/>diagnostic_engine/core/engine/selector.js"]
-    API --> Compiler["Form Compiler<br/>diagnostic_engine/core/engine/compiler.js"]
-    API --> Session["Session State<br/>diagnostic_engine/storage/session.js"]
-    API --> Ledger["Append-Only Ledger<br/>diagnostic_engine/storage/ledger.js"]
-    Session --> Store["Storage Adapter<br/>diagnostic_engine/storage/store.js"]
+    User["User"] --> UI["Static Web UI<br/>web/index.html + web/knee/index.html<br/>web/home.js + web/app.js"]
+    UI --> Routes["Shared HTTP Layer<br/>diagnostic_engine/http/routes.js"]
+    Routes --> Intake["Intake Parser<br/>intake-parser.js"]
+    Intake --> RuleParser["Rule Parser<br/>parser.js"]
+    Routes --> Safety["Safety Rules<br/>safety.js"]
+    Routes --> Scorer["Candidate Scorer<br/>scorer.js"]
+    Routes --> Selector["Question Selector<br/>selector.js"]
+    Routes --> Compiler["Form Compiler<br/>compiler.js"]
+    Routes --> Session["Session State<br/>storage/session.js"]
+    Routes --> Ledger["Ledger<br/>storage/ledger.js"]
+    Session --> Store["Storage Adapter<br/>storage/store.js"]
     Ledger --> Store
-    Store --> FileStore["Local File Store"]
+    Store --> FileStore["File Store"]
     Store --> Supabase["Supabase Store"]
-    Parser --> Registry["Knowledge Registry<br/>diagnostic_engine/core/registry/*.json"]
+    Intake --> Registry["Registry JSON"]
+    RuleParser --> Registry
     Scorer --> Registry
     Selector --> Registry
     Compiler --> Registry
@@ -59,121 +113,117 @@ flowchart LR
 
 ## Main Building Blocks
 
-### 1. Knowledge Registry
+### 1. Registry
 
-The registry is the source of truth for the engine's reasoning model.
-
-It lives under:
+The registry is the source of truth for the domain model:
 
 - `diagnostic_engine/core/registry/symptoms/knee.json`
 - `diagnostic_engine/core/registry/questions/knee.json`
 - `diagnostic_engine/core/registry/diseases/knee/*.json`
 
-The registry separates responsibilities cleanly:
+Responsibilities are intentionally separated:
 
-- symptom registry: defines the controlled vocabulary and scale semantics
-- question bank: defines interview questions and how answer options map back to symptoms
-- disease nodes: define support patterns, anti-patterns, stages, and contradiction rules
+- symptom registry: canonical symptom ids, categories, value types, scale labels
+- question bank: question wording, phase, priority, gating conditions, and answer-to-symptom mappings
+- disease files: stage-specific support, anti-symptoms, contradiction logic, and hard blocks
 
-This separation matters because it keeps the engine from hiding medical logic inside UI code or prompt text.
+This keeps medical logic out of the browser and out of prompt text.
 
 ### 2. Registry Validation
 
-Before the app starts, the registry is validated by `diagnostic_engine/core/registry/validate.js`.
+`diagnostic_engine/core/registry/validate.js` validates the registry before the runtime serves requests.
 
-Validation exists to catch structural problems early, such as:
+It catches issues such as:
 
-- missing symptom references
+- broken symptom references
 - invalid question mappings
 - malformed disease definitions
-- broken coverage across the bounded knee scope
+- missing bounded-scope coverage
 
-That means the runtime assumes the registry is internally consistent and can stay simpler during request handling.
+### 3. Runtime and Routing
 
-### 3. HTTP and Runtime Layer
-
-The shared runtime entry lives in:
+The shared runtime is split across:
 
 - `diagnostic_engine/runtime/index.js` for local Node hosting
-- `api/*.mjs` for Vercel serverless hosting
 - `diagnostic_engine/runtime/runtime.js` for lazy service initialization
+- `diagnostic_engine/runtime/config.js` for environment/config resolution
 - `diagnostic_engine/http/routes.js` for the actual HTTP behavior
+- `api/*.mjs` as thin Vercel entry shims
 
-This split lets the same business logic run in two modes:
+The route layer handles:
 
-- local mode: `node diagnostic_engine/runtime/index.js`
-- hosted mode: Vercel invokes the `api/*.mjs` shims
+- static file serving from `web/`
+- `/api/session/start`
+- `/api/session/answer`
+- `/api/session/get`
+- `/api/session/ledger`
+- compatibility session routes
+- `/api/health`
 
-In both cases, the handler uses the same service graph:
+### 4. Browser UI
 
-- config
-- validated registry
-- storage adapter
-- engine modules
+The browser layer is static and intentionally thin:
 
-### 4. Demo UI
+- `web/index.html` and `web/home.js` handle the overview-to-workspace handoff
+- `web/knee/index.html` and `web/app.js` run the knee interview experience
+- `web/styles.css` holds the shared visual system
 
-The mini MVP frontend is intentionally simple and static:
+The current knee workspace is one flattened workbench container with:
 
-- `web/index.html`
-- `web/knee/index.html`
-- `web/home.js`
-- `web/app.js`
-- `web/styles.css`
+- a header row
+- session metrics
+- a status banner
+- the active stage card
 
-It does not contain clinical reasoning logic. It only:
+The active stage is always one of:
 
-- captures the homepage handoff and launches the knee workspace
-- renders follow-up questions
-- submits answers
-- shows candidates in a structured popup, or renders fallback or escalation states
-- loads the ledger for inspection
+- intake
+- form
+- outcome
 
-All reasoning stays server-side.
+Shortlist results are shown in a structured modal popup, and the ledger is opened on its own page from the workspace.
 
 ## Runtime Data Model
 
-### Symptom Evidence
+### Symptom State
 
-The engine stores evidence in `session.symptomState` keyed by symptom id.
+Sessions store evidence in `session.symptomState`, keyed by symptom id.
 
-Each entry has:
+Each symptom entry contains:
 
 - `value`
 - `status`
 - `source`
 - `updatedAt`
 
-The `status` is important:
+Evidence status priority is enforced in `diagnostic_engine/storage/session.js`:
 
-- `explicit`: directly answered by the user
-- `inferred`: derived with confidence from deterministic parsing
-- `low_confidence`: inferred from softer or tentative language
+- `explicit`
+- `inferred`
+- `low_confidence`
 
-When evidence is merged, stronger evidence wins:
+Stronger evidence wins when symptom state is merged.
 
-- `explicit` beats `inferred`
-- `inferred` beats `low_confidence`
+### Session Object
 
-That prevents a tentative parse from overriding a later direct answer.
+A session stores the live interview state:
 
-### Session
+- `sessionId`
+- `patientId`
+- `bodyRegion`
+- `symptomState`
+- `candidates`
+- `eliminatedNodes`
+- `questionLog`
+- `latestForm`
+- `rawMessages`
+- `parserOutput`
+- `round`
+- `status`
+- `debounceExpiresAt`
+- timestamps
 
-A session stores the working state of one interview:
-
-- patient id
-- body region
-- symptom state
-- current candidates
-- eliminated nodes
-- asked question batches
-- latest form
-- raw messages
-- parser leftovers
-- round count
-- session status
-
-Statuses move through a bounded lifecycle:
+Current statuses:
 
 - `pending`
 - `questioning`
@@ -183,45 +233,29 @@ Statuses move through a bounded lifecycle:
 
 ### Ledger
 
-The ledger is append-only and records major events, for example:
+The ledger is append-only and records material steps, including:
 
-- session created
-- session reused
-- parse merged
-- round complete
+- session creation or reuse
+- parse merge
+- round completion
 - answers recorded
 - candidate flagged
 - fallback triggered
 - safety escalated
 
-This gives the MVP an audit trail without making the runtime logic depend on logs.
+## Request Flow
 
-## How The Engine Does What It Does
-
-### Boot Sequence
-
-At startup the runtime does four things:
-
-1. load environment variables
-2. build config
-3. validate and load the registry
-4. create services, including the selected store
-
-Only after that does it begin serving requests.
-
-### Request Flow
-
-There are two core write operations:
+There are two primary write operations:
 
 - `POST /api/session/start`
 - `POST /api/session/answer`
 
-For hosted deployments, the main read operations are:
+Primary read operations:
 
 - `GET /api/session/get?sessionId=...`
 - `GET /api/session/ledger?sessionId=...`
 
-The shared handler also accepts `/session/:id` and `/session/:id/ledger` compatibility paths, and the local Node server accepts those directly.
+Compatibility paths also exist for direct session and ledger reads.
 
 ### Start Session Flow
 
@@ -229,8 +263,8 @@ The shared handler also accepts `/session/:id` and `/session/:id/ledger` compati
 sequenceDiagram
     participant U as User/UI
     participant R as Routes
-    participant P as Parser
     participant S as Session Store
+    participant I as Intake Parser
     participant Safe as Safety
     participant Score as Scorer
     participant Sel as Selector
@@ -239,9 +273,9 @@ sequenceDiagram
 
     U->>R: POST /api/session/start
     R->>S: find reusable session or create new one
-    R->>P: parse initial text
-    P-->>R: bounded symptom evidence + unparsed clauses
-    R->>S: merge symptom evidence
+    R->>I: parse initial complaint
+    I-->>R: parserOutput + symptom evidence
+    R->>S: merge parser evidence
     R->>L: append parse/session events
     R->>Safe: evaluate safety
     alt Safety triggered
@@ -250,22 +284,20 @@ sequenceDiagram
         R-->>U: escalation result
     else Continue
         R->>Score: score candidates
-        alt Completed question round plus presentable candidate
+        R->>Sel: choose next question candidate
+        alt shortlist is presentable
             R->>S: mark session complete
             R->>L: append candidate event
-            R-->>U: ranked candidates
-        else Need more evidence
-            R->>Sel: choose next questions
-            alt No useful questions remain or round limit reached
-                R->>S: mark session fallback
-                R->>L: append fallback event
-                R-->>U: fallback result
-            else Ask next batch
-                R->>C: compile question form
-                R->>S: save form and round
-                R->>L: append round/question event
-                R-->>U: follow-up form
-            end
+            R-->>U: candidate result
+        else no useful question or round cap hit
+            R->>S: mark session fallback
+            R->>L: append fallback event
+            R-->>U: fallback result
+        else ask next question
+            R->>C: compile single-question form
+            R->>S: save latest form and round
+            R->>L: record asked question batch
+            R-->>U: form payload
         end
     end
 ```
@@ -275,226 +307,241 @@ sequenceDiagram
 On `POST /api/session/answer`, the system:
 
 1. loads the session
-2. maps submitted question responses back into symptom keys
-3. merges those as `explicit` evidence
-4. appends an `ANSWERS_RECORDED` ledger entry
+2. maps the submitted answer back to symptom ids
+3. merges the new evidence as `explicit`
+4. appends `ANSWERS_RECORDED`
 5. re-runs the same evaluation loop
 
-This is important: there is not a separate scoring path for initial text and question answers. The entire engine runs on one accumulated symptom state.
+There is only one engine state. Free-text evidence and form evidence both feed the same symptom map.
 
-The first pass after free-text intake can produce a strong internal shortlist, but the system still requires at least one completed follow-up round before it presents candidates to the user.
+## Intake Parsing
 
-## Engine Modules In Detail
+The intake layer is hybrid.
 
-### Parser
+### Entry Point
 
-`diagnostic_engine/core/engine/parser.js` converts raw text into bounded evidence.
+`diagnostic_engine/core/engine/intake-parser.js` is the current entry point for initial complaint parsing.
 
-It does this with:
+It does three jobs:
 
-- phrase-to-symptom regex rules
-- negative rules for explicit denials
+- optional LLM-backed structured parsing
+- deterministic fallback parsing
+- building a UI-facing parser summary and evidence preview
+
+### LLM Path
+
+If `OPENAI_API_KEY` is configured, `intake-parser.js` calls the OpenAI Responses API and requests a structured JSON parse grounded in the symptom registry.
+
+The LLM is constrained to return:
+
+- boolean evidence
+- 0-5 scale evidence
+- a short summary
+- unparsed leftovers
+
+The output is normalized back into the same bounded symptom-entry structure used everywhere else.
+
+### Deterministic Path
+
+If no API key is configured, or the OpenAI request fails, the runtime falls back to `diagnostic_engine/core/engine/parser.js`.
+
+That parser uses:
+
+- regex-like phrase matching
+- explicit negation handling
 - simple severity inference
 - simple timeline inference
-- clause splitting to preserve unmatched leftovers
+- clause splitting for unmatched leftovers
 
-The parser never invents new symptom keys. If a clause does not map to the registry, it is preserved in `unparsed`.
+The key invariant is the same in both modes:
 
-This keeps the parser useful without letting it silently expand the domain.
+> intake parsing may only emit controlled registry evidence
 
-### Safety Layer
+## Safety Layer
 
-`diagnostic_engine/core/engine/safety.js` runs before candidate ranking is allowed to finalize.
+`diagnostic_engine/core/engine/safety.js` runs before candidate finalization.
 
-It currently escalates for:
+It currently escalates on patterns such as:
 
 - deformity
 - fever with warmth or redness
 - major trauma with marked weight-bearing difficulty
 
-This logic is global on purpose. It does not belong to a single disease node because it is safety triage, not disease fit logic.
+Safety logic is global by design. It is not attached to a single disease node.
 
-### Scorer
+## Candidate Scoring
 
-`diagnostic_engine/core/engine/scorer.js` evaluates every disease across three stages:
+`diagnostic_engine/core/engine/scorer.js` evaluates each disease across:
 
 - acute
 - subacute
 - chronic
 
-For each disease/stage pair it calculates:
+For each disease/stage pair it applies:
 
-- support from matching evidence
-- penalties from anti-symptoms
-- optional contradiction penalties
-- hard blocking for confirmed disqualifiers
-- normalization based on known evidence coverage
+- weighted support
+- anti-symptom penalties
+- contradiction penalties
+- explicit hard blocks
+- normalization against known evidence
 
-Important scoring behaviors:
-
-- support is weighted by evidence confidence
-- unknown evidence contributes nothing instead of counting as mismatch
-- only explicit confirmed evidence can trigger certain hard blocks
-- the best stage becomes that disease's current public candidate state
-
-Candidate bands are then assigned:
+Current candidate bands:
 
 - `confident`: score >= 80
 - `possible`: score >= 60
 - `low`: below 60
 - `eliminated`: hard blocked
 
-### Question Selector
+The public candidate stage is the best-scoring stage for that disease.
 
-`diagnostic_engine/core/engine/selector.js` chooses the next best questions instead of asking everything.
+## Question Selection
 
-It scores each remaining question based on:
+`diagnostic_engine/core/engine/selector.js` chooses the next best unresolved question.
+
+Selection considers:
 
 - question priority
-- interview phase
-- whether mapped symptoms are still unknown
-- whether current evidence is only low confidence
-- how much the mapped symptoms separate the current top candidates
-- question `requires`, `ask_if`, and `blocks_if` conditions
-- whether the question helps discriminate among the live shortlist
+- question phase
+- unknown mapped symptoms
+- low-confidence or inferred evidence needing confirmation
+- discrimination value for the current top candidates
+- `requires`, `ask_if`, and `blocks_if`
+- shortlist-specific relevance
 
-The system currently asks up to 4 questions in the first follow-up round and up to 3 in later rounds.
+The current route layer asks exactly one question at a time by calling the selector with `limit: 1`.
 
-That first round also acts as a presentation gate: the shortlist is not shown until at least one question round has been answered.
+## Candidate Presentation Rules
 
-### Form Compiler
+Shortlist presentation is controlled in `diagnostic_engine/http/routes.js`, not just in the selector.
 
-`diagnostic_engine/core/engine/compiler.js` turns selected questions into a client-friendly form payload.
+Current behavior:
 
-It also:
+- candidates are never shown before the configured minimum answered rounds
+- default minimum answered rounds before candidates: `3`
+- default round ceiling: `5`
+- after the minimum floor, the engine only presents candidates if:
+  - a confident shortlist exists, and
+  - either the lead is decisive enough or there are no useful questions left
 
-- adds clarification notes when a question targets low-confidence evidence
-- normalizes 0 to 5 scale rendering
-- maps answer payloads back into explicit symptom entries
+The current decisiveness rule is:
 
-That means the UI can stay dumb and the server remains the source of truth for both question semantics and answer interpretation.
+- top-candidate lead gap must be at least `15`
+- otherwise, if the shortlist is still tight and another useful question exists, questioning continues
 
-### Fallback
+This is why the engine no longer always stops immediately after the third answered question.
 
-`diagnostic_engine/core/engine/fallback.js` handles the bounded exit path when the system cannot support a confident result.
+## Form Compilation
 
-Fallback happens when:
+`diagnostic_engine/core/engine/compiler.js` converts selected registry questions into a client-friendly form contract.
 
-- the round limit is reached
-- there are no useful questions left
+It is responsible for:
 
-This is a deliberate product behavior. The engine is designed to stop cautiously rather than over-claim certainty.
+- compiling the single active question payload
+- preserving authored registry question text
+- attaching clarification notes
+- providing the full `0-5` scale labels
+- mapping submitted question responses back into symptom updates
+
+The browser does not decide what a question means. It only renders the server-generated contract.
+
+## UI Runtime Behavior
+
+`web/app.js` manages the current browser flow:
+
+- start in intake mode
+- submit free text
+- transition to the form stage
+- render one question at a time
+- keep session metadata visible
+- open the shortlist modal when candidates are ready
+- render fallback or escalation inline in the outcome stage
+
+The browser remains a client for the route layer. It does not perform medical reasoning itself.
 
 ## Storage Architecture
 
-The store layer exists so the same engine can run locally and in a hosted serverless environment.
-
-### Store Boundary
-
-`diagnostic_engine/storage/store.js` selects the backend based on config:
+`diagnostic_engine/storage/store.js` selects the active backend:
 
 - `file` -> `diagnostic_engine/storage/file-store.js`
 - `supabase` -> `diagnostic_engine/storage/supabase-store.js`
 
-The engine and route layer do not know which backend is active. They only call store methods such as:
-
-- `getSession`
-- `saveSession`
-- `listSessions`
-- `findReusableSession`
-- `appendLedgerEntry`
-- `getLedger`
+The route and engine layers stay storage-agnostic.
 
 ### File Store
 
-The file store is used for:
+Used for:
 
 - local development
-- automated tests
+- tests
 - benchmark runs
 
-It writes:
-
-- one JSON file per session
-- one JSONL file per ledger
+It writes session JSON and append-only ledger data under the configured local data directory.
 
 ### Supabase Store
 
-The Supabase store is used for hosted Vercel deployments.
+Used for hosted deployments.
 
 It stores:
 
 - full session JSON in `diagnostic_sessions.session_data`
 - append-only ledger rows in `diagnostic_ledger_entries`
 
-This is a pragmatic MVP decision:
+This keeps the runtime stateless across Vercel invocations while preserving full session shape.
 
-- the engine keeps full flexibility over session shape
-- Supabase provides durable persistence across stateless Vercel invocations
-- schema complexity stays low while the product scope is still evolving
-
-## Deployment Architecture
+## Deployment Shape
 
 ```mermaid
 flowchart TB
     Browser["Browser"] --> Vercel["Vercel"]
-    Vercel --> Static["Static assets from web/ via api/web.mjs"]
-    Vercel --> Func["Serverless handlers in api/*.mjs"]
+    Vercel --> Static["Static web assets via api/web.mjs"]
+    Vercel --> Func["api/*.mjs serverless handlers"]
     Func --> Runtime["diagnostic_engine/runtime/runtime.js"]
     Runtime --> Routes["diagnostic_engine/http/routes.js"]
     Routes --> Engine["Engine modules"]
     Routes --> Supabase["Supabase tables"]
 ```
 
-Hosted responsibilities are split cleanly:
+The same reasoning core also runs locally through `diagnostic_engine/runtime/index.js`.
 
-- browser: presentation and answer submission
-- Vercel static hosting: serves the demo UI
-- Vercel serverless function: runs the engine
-- Supabase: persists sessions and ledgers
+## Why This Architecture Works
 
-## Why This Architecture Works For The MVP
+This shape works for the current MVP because it keeps the important boundaries clean:
 
-This shape is effective because it balances three things:
+- browser concerns stay in `web/`
+- request orchestration stays in `http/routes.js`
+- reasoning stays in engine modules and registry JSON
+- state persistence stays behind the store boundary
 
-- product clarity: the demo is easy to host and easy to explain
-- reasoning discipline: the medical logic is explicit and inspectable
-- implementation flexibility: storage and hosting can change without rewriting the reasoning core
+It also avoids common failure modes:
 
-It also avoids several common MVP traps:
-
-- no hidden prompt-only logic
 - no client-side diagnosis logic
-- no dependence on in-memory server state
-- no need for a full ORM or large framework
+- no prompt-only reasoning core
+- no hidden in-memory server state dependency
+- no need to couple storage details to the scoring engine
 
 ## Known Boundaries
 
-This system is intentionally constrained.
+The current system does not provide:
 
-It does not currently provide:
-
-- broad multi-body-part coverage
-- probabilistic calibration against real-world prevalence
-- LLM-based open-domain understanding
+- multi-body-part reasoning
+- calibrated prevalence-based probabilities
 - clinician workflow integration
-- authenticated multi-tenant access control
+- user auth or tenant isolation
+- broad open-domain medical understanding
 
-Those can be added later, but the current architecture is intentionally optimized for a clear, inspectable knee-triage MVP.
+The LLM intake parser is intentionally narrow and registry-bounded. It is not an open-ended diagnosis agent.
 
 ## Safe Extension Points
 
-If the system expands, the safest extension paths are:
+The safest ways to extend the system are:
 
-- add more symptoms, questions, and disease nodes through the registry
-- add a second body part as a new registry scope
-- add richer analytics by reading the ledger
-- swap storage backends behind `diagnostic_engine/storage/store.js`
-- add a smarter parser without changing the scoring contracts
-- add authentication around the API without changing engine internals
+- add more registry symptoms, questions, and disease nodes
+- add a second body-part scope through a parallel registry set
+- add richer analytics over the ledger
+- change the persistence backend behind `storage/store.js`
+- improve intake parsing without changing the symptom-state contract
+- add auth and API controls around the existing route layer
 
-The core invariant to protect is this:
+The invariant to protect is:
 
-> the reasoning engine should continue to operate on controlled symptom evidence, not on raw UI answers or free-form text directly
-
-That invariant is what keeps the system explainable and testable.
+> the engine should continue to reason over controlled symptom evidence rather than raw complaint text or UI-specific state

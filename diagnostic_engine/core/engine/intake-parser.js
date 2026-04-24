@@ -2,7 +2,7 @@ const { parseInitialText } = require("./parser");
 
 const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
 const OPENAI_TIMEOUT_MS = 15000;
-const DEFAULT_OPENAI_MODEL = "gpt-5.2";
+const DEFAULT_OPENAI_MODEL = "gpt-4.1";
 
 function buildSymptomCatalog(registry) {
   return registry.symptoms.map((symptom) => ({
